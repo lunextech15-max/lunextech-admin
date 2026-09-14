@@ -5,6 +5,7 @@ import { getAdminIdentity } from "@/lib/admin/identity";
 import { MOCK_PROJECTS } from "@/lib/staff/projects-data";
 import { getProjectMilestones } from "@/lib/admin/milestones-data";
 import { MOCK_ADMIN_ACTIVITY } from "@/lib/admin/activity-data";
+import { getAllApplications } from "@/lib/admin/real-applications";
 import {
   getActiveProjectCount,
   getTeamMemberCount,
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
 
 export default async function AdminOverviewPage() {
   const identity = await getAdminIdentity();
+  const applications = await getAllApplications();
 
   const milestoneProject = MOCK_PROJECTS.find((project) =>
     getProjectMilestones(project.code).some((m) => m.status === "in-progress")
@@ -39,7 +41,7 @@ export default async function AdminOverviewPage() {
         activeInterns={getActiveInternCount()}
         openTasks={getOpenTaskCount()}
         overdueTasks={getOverdueTasks()}
-        pendingApplications={getPendingApplicationsCount()}
+        pendingApplications={getPendingApplicationsCount(applications)}
         milestoneProjectName={milestoneProject?.name ?? null}
         milestoneTitle={milestone?.title ?? null}
         milestoneSlug={milestoneProject?.slug ?? null}

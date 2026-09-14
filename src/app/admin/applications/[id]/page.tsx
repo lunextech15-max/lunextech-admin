@@ -4,26 +4,24 @@ import { notFound } from "next/navigation";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ApplicationActions from "@/components/admin/applications/ApplicationActions";
 import { getAdminIdentity } from "@/lib/admin/identity";
-import { MOCK_APPLICATIONS } from "@/lib/admin/applications-data";
-
-export function generateStaticParams() {
-  return MOCK_APPLICATIONS.map((a) => ({ id: a.id }));
-}
+import { getApplicationById } from "@/lib/admin/real-applications";
 
 export async function generateMetadata({ params }: PageProps<"/admin/applications/[id]">): Promise<Metadata> {
   const { id } = await params;
-  const application = MOCK_APPLICATIONS.find((a) => a.id === id);
+  const application = await getApplicationById(decodeURIComponent(id));
   return {
-    title: application ? `${application.applicantLabel} — LUNEX TECH Admin` : "Application — LUNEX TECH Admin",
+    title: application ? `${application.name} — LUNEX TECH Admin` : "Application — LUNEX TECH Admin",
     robots: { index: false, follow: false },
   };
 }
+
+const KIND_LABEL = { internship: "Internship application", job: "Job application" } as const;
 
 export default async function AdminApplicationDetailPage({ params }: PageProps<"/admin/applications/[id]">) {
   const identity = await getAdminIdentity();
 
   const { id } = await params;
-  const application = MOCK_APPLICATIONS.find((a) => a.id === id);
+  const application = await getApplicationById(decodeURIComponent(id));
   if (!application) notFound();
 
   return (
@@ -36,9 +34,11 @@ export default async function AdminApplicationDetailPage({ params }: PageProps<"
           ← All applications
         </Link>
 
-        <p className="mt-6 text-[10px] font-medium tracking-[0.2em] text-accent uppercase">{application.role}</p>
+        <p className="mt-6 text-[10px] font-medium tracking-[0.2em] text-accent uppercase">
+          {KIND_LABEL[application.kind]} · {application.roleLabel}
+        </p>
         <h1 className="mt-2 font-display text-[9vw] font-black leading-[0.95] tracking-tight text-soft-white sm:text-[6vw] lg:text-[3vw] xl:text-4xl">
-          {application.applicantLabel}
+          {application.name}
         </h1>
 
         <section aria-labelledby="applicant-info-heading" className="mt-8">
@@ -51,7 +51,7 @@ export default async function AdminApplicationDetailPage({ params }: PageProps<"
           <div className="mt-4 grid grid-cols-2 gap-5 border border-line p-6 sm:grid-cols-3 sm:p-8">
             <div>
               <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Name</p>
-              <p className="mt-1.5 text-sm font-medium text-soft-white">{application.applicantLabel}</p>
+              <p className="mt-1.5 text-sm font-medium text-soft-white">{application.name}</p>
             </div>
             <div>
               <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Email</p>
@@ -59,8 +59,46 @@ export default async function AdminApplicationDetailPage({ params }: PageProps<"
             </div>
             <div>
               <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Phone</p>
-              <p className="mt-1.5 text-sm font-medium text-soft-white">{application.phone}</p>
+              <p className="mt-1.5 text-sm font-medium text-soft-white">{application.phone || "—"}</p>
             </div>
+            <div>
+              <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Location</p>
+              <p className="mt-1.5 text-sm font-medium text-soft-white">{application.location || "—"}</p>
+            </div>
+            {application.kind === "internship" ? (
+              <>
+                <div>
+                  <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Education</p>
+                  <p className="mt-1.5 text-sm font-medium text-soft-white">
+                    {application.education || "—"}
+                    {application.fieldOfStudy ? ` · ${application.fieldOfStudy}` : ""}
+                  </p>
+                </div>
+                {application.year && (
+                  <div>
+                    <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Year</p>
+                    <p className="mt-1.5 text-sm font-medium text-soft-white">{application.year}</p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {application.currentPosition && (
+                  <div>
+                    <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">
+                      Current role
+                    </p>
+                    <p className="mt-1.5 text-sm font-medium text-soft-white">{application.currentPosition}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">
+                    Experience level
+                  </p>
+                  <p className="mt-1.5 text-sm font-medium text-soft-white">{application.experienceLevel || "—"}</p>
+                </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -74,45 +112,103 @@ export default async function AdminApplicationDetailPage({ params }: PageProps<"
           <div className="mt-4 flex flex-col gap-6 border border-line p-6 sm:p-8">
             <div>
               <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">
-                Internship role
+                {application.kind === "internship" ? "Program" : "Role"}
               </p>
-              <p className="mt-1.5 text-sm font-medium text-soft-white">{application.role}</p>
+              <p className="mt-1.5 text-sm font-medium text-soft-white">{application.roleLabel}</p>
             </div>
+
+            {application.kind === "internship" && application.learningGoals && (
+              <div>
+                <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">
+                  What they want to learn
+                </p>
+                <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-soft-white/60">
+                  {application.learningGoals}
+                </p>
+              </div>
+            )}
+
+            {application.kind === "job" && application.experience && (
+              <div>
+                <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Experience</p>
+                <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-soft-white/60">{application.experience}</p>
+              </div>
+            )}
+
             <div>
               <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">
-                Why they want to join
+                {application.kind === "internship" ? "Why they want to join" : "Why LUNEX TECH"}
               </p>
-              <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-soft-white/60">{application.whyJoin}</p>
+              <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-soft-white/60">{application.motivation}</p>
             </div>
-            <div>
-              <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Skills</p>
-              <p className="mt-1.5 text-sm text-soft-white/70">{application.skills.join(", ")}</p>
-            </div>
-            {application.portfolioUrl && (
+
+            {application.skills && (
+              <div>
+                <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Skills</p>
+                <p className="mt-1.5 text-sm text-soft-white/70">{application.skills}</p>
+              </div>
+            )}
+
+            {application.portfolio && (
               <div>
                 <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Portfolio</p>
                 <a
-                  href={application.portfolioUrl}
+                  href={application.portfolio}
                   target="_blank"
                   rel="noreferrer"
                   className="dash-metric-link mt-1.5 inline-block text-sm"
                 >
-                  {application.portfolioUrl}
+                  {application.portfolio}
                 </a>
               </div>
             )}
-            <div>
-              <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Resume</p>
-              <p className="mt-1.5 text-sm text-soft-white/60">{application.resumeNote}</p>
-            </div>
+
+            {application.github && (
+              <div>
+                <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">GitHub</p>
+                <a
+                  href={application.github}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="dash-metric-link mt-1.5 inline-block text-sm"
+                >
+                  {application.github}
+                </a>
+              </div>
+            )}
+
+            {application.linkedin && (
+              <div>
+                <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">LinkedIn</p>
+                <a
+                  href={application.linkedin}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="dash-metric-link mt-1.5 inline-block text-sm"
+                >
+                  {application.linkedin}
+                </a>
+              </div>
+            )}
+
+            {application.kind === "job" && (
+              <div>
+                <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Resume</p>
+                <p className="mt-1.5 text-sm text-soft-white/60">
+                  {application.resumeFileName || "No resume uploaded."}
+                </p>
+              </div>
+            )}
           </div>
         </section>
 
         <ApplicationActions
+          id={application.id}
           initialStatus={application.status}
-          applicantLabel={application.applicantLabel}
+          kind={application.kind}
+          name={application.name}
           email={application.email}
-          internshipRole={application.role}
+          roleLabel={application.roleLabel}
         />
       </div>
     </AdminLayout>

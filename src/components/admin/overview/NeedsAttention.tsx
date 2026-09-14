@@ -37,7 +37,7 @@ export default function NeedsAttention({
   if (pendingApplications > 0) {
     items.push({
       id: "applications",
-      label: `${pendingApplications} internship ${pendingApplications === 1 ? "application" : "applications"} pending`,
+      label: `${pendingApplications} ${pendingApplications === 1 ? "application" : "applications"} pending`,
       detail: "New candidates require review.",
       actionLabel: "Review applications",
       href: "/admin/applications",

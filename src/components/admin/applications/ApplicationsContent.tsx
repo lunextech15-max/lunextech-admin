@@ -1,42 +1,37 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import ApplicationRow from "./ApplicationRow";
 import EmptyState from "@/components/admin/EmptyState";
-import type { Application } from "@/lib/admin/types";
+import type { AdminApplication, ApplicationKind, ApplicationStatus } from "@/lib/admin/application-types";
 
-type Filter = "all" | "new" | "under-review" | "accepted" | "rejected";
+type StatusFilter = "all" | ApplicationStatus;
+type KindFilter = "all" | ApplicationKind;
 
-const FILTERS: { id: Filter; label: string }[] = [
+const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
   { id: "all", label: "All" },
   { id: "new", label: "New" },
   { id: "under-review", label: "Under review" },
+  { id: "interview", label: "Interview" },
   { id: "accepted", label: "Accepted" },
   { id: "rejected", label: "Rejected" },
 ];
 
-function loadApplications(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 450));
-}
+const KIND_FILTERS: { id: KindFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "internship", label: "Internship" },
+  { id: "job", label: "Job" },
+];
 
-export default function ApplicationsContent({ applications }: { applications: Application[] }) {
-  const [loading, setLoading] = useState(true);
+export default function ApplicationsContent({ applications }: { applications: AdminApplication[] }) {
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
-
-  useEffect(() => {
-    let cancelled = false;
-    loadApplications().then(() => {
-      if (!cancelled) setLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [kindFilter, setKindFilter] = useState<KindFilter>("all");
 
   const counts = {
     new: applications.filter((a) => a.status === "new").length,
     underReview: applications.filter((a) => a.status === "under-review").length,
+    interview: applications.filter((a) => a.status === "interview").length,
     accepted: applications.filter((a) => a.status === "accepted").length,
     rejected: applications.filter((a) => a.status === "rejected").length,
   };
@@ -44,19 +39,10 @@ export default function ApplicationsContent({ applications }: { applications: Ap
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return applications
-      .filter((a) => filter === "all" || a.status === filter)
-      .filter((a) => !q || a.applicantLabel.toLowerCase().includes(q) || a.role.toLowerCase().includes(q));
-  }, [applications, query, filter]);
-
-  if (loading) {
-    return (
-      <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
-        <div className="dash-skeleton h-4 w-32" />
-        <div className="dash-skeleton mt-4 h-10 w-56" />
-        <div className="dash-skeleton mt-8 h-40" />
-      </div>
-    );
-  }
+      .filter((a) => statusFilter === "all" || a.status === statusFilter)
+      .filter((a) => kindFilter === "all" || a.kind === kindFilter)
+      .filter((a) => !q || a.name.toLowerCase().includes(q) || a.roleLabel.toLowerCase().includes(q));
+  }, [applications, query, statusFilter, kindFilter]);
 
   return (
     <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
@@ -67,13 +53,16 @@ export default function ApplicationsContent({ applications }: { applications: Ap
         <h1 className="mt-4 font-display text-[11vw] font-black leading-[0.95] tracking-tight text-soft-white sm:text-[6vw] lg:text-[3vw] xl:text-4xl">
           Applications.
         </h1>
-        <p className="mt-3 text-sm text-soft-white/50 sm:text-base">Review internship applications.</p>
+        <p className="mt-3 text-sm text-soft-white/50 sm:text-base">
+          Review internship and job applications submitted from the public site.
+        </p>
       </div>
 
       <div className="dash-fade mt-8 flex flex-wrap gap-x-8 gap-y-3" style={{ animationDelay: "0.06s" }}>
         {[
           { label: "New", value: counts.new },
           { label: "Under review", value: counts.underReview },
+          { label: "Interview", value: counts.interview },
           { label: "Accepted", value: counts.accepted },
           { label: "Rejected", value: counts.rejected },
         ].map((item) => (
@@ -92,19 +81,35 @@ export default function ApplicationsContent({ applications }: { applications: Ap
         className="dash-fade mt-8 flex flex-col gap-4 border-y border-line py-5 lg:flex-row lg:items-center lg:justify-between"
         style={{ animationDelay: "0.12s" }}
       >
-        <div role="tablist" aria-label="Filter applications" className="flex flex-wrap items-center gap-6">
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              role="tab"
-              aria-selected={f.id === filter}
-              onClick={() => setFilter(f.id)}
-              className={`proj-filter ${f.id === filter ? "is-active" : ""}`}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="flex flex-col gap-4">
+          <div role="tablist" aria-label="Filter by type" className="flex flex-wrap items-center gap-6">
+            {KIND_FILTERS.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                role="tab"
+                aria-selected={f.id === kindFilter}
+                onClick={() => setKindFilter(f.id)}
+                className={`proj-filter ${f.id === kindFilter ? "is-active" : ""}`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <div role="tablist" aria-label="Filter by status" className="flex flex-wrap items-center gap-6">
+            {STATUS_FILTERS.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                role="tab"
+                aria-selected={f.id === statusFilter}
+                onClick={() => setStatusFilter(f.id)}
+                className={`proj-filter ${f.id === statusFilter ? "is-active" : ""}`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="sm:w-64">
           <input
@@ -128,18 +133,25 @@ export default function ApplicationsContent({ applications }: { applications: Ap
         ) : (
           <EmptyState
             title="No applications found."
-            description="Try adjusting your search or filters."
+            description={
+              applications.length === 0
+                ? "No applications have been submitted yet."
+                : "Try adjusting your search or filters."
+            }
             action={
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery("");
-                  setFilter("all");
-                }}
-                className="dash-metric-link text-xs font-medium tracking-[0.15em] uppercase"
-              >
-                Clear filters →
-              </button>
+              applications.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setStatusFilter("all");
+                    setKindFilter("all");
+                  }}
+                  className="dash-metric-link text-xs font-medium tracking-[0.15em] uppercase"
+                >
+                  Clear filters →
+                </button>
+              ) : undefined
             }
           />
         )}

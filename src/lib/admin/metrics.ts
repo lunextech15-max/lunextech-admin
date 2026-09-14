@@ -6,7 +6,7 @@ import { MOCK_TASKS } from "@/lib/staff/tasks-data";
 import { MOCK_TEAM } from "@/lib/staff/team-data";
 import { INTERN_TASKS } from "@/lib/intern/mock-data";
 import { ADMIN_INTERNS } from "./people-data";
-import { MOCK_APPLICATIONS } from "./applications-data";
+import type { AdminApplication } from "./application-types";
 
 // Anchors "today" to the same date this whole mock dataset's task due-dates
 // are written against, so overdue/upcoming comparisons stay internally
@@ -49,8 +49,8 @@ export function getOverdueTasks() {
   return MOCK_TASKS.filter((t) => t.status !== "completed" && t.dueDate < ADMIN_TODAY);
 }
 
-export function getPendingApplicationsCount(): number {
-  return MOCK_APPLICATIONS.filter((a) => a.status === "new" || a.status === "under-review").length;
+export function getPendingApplicationsCount(applications: AdminApplication[]): number {
+  return applications.filter((a) => a.status === "new" || a.status === "under-review").length;
 }
 
 export function getActiveInternCount(): number {

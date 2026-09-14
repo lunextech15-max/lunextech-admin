@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ApplicationsContent from "@/components/admin/applications/ApplicationsContent";
 import { getAdminIdentity } from "@/lib/admin/identity";
-import { MOCK_APPLICATIONS } from "@/lib/admin/applications-data";
+import { getAllApplications } from "@/lib/admin/real-applications";
 
 export const metadata: Metadata = {
   title: "Applications — LUNEX TECH Admin",
@@ -12,10 +12,11 @@ export const metadata: Metadata = {
 
 export default async function AdminApplicationsPage() {
   const identity = await getAdminIdentity();
+  const applications = await getAllApplications();
 
   return (
     <AdminLayout active="applications" adminName={identity.name} adminInitials={identity.initials}>
-      <ApplicationsContent applications={MOCK_APPLICATIONS} />
+      <ApplicationsContent applications={applications} />
     </AdminLayout>
   );
 }

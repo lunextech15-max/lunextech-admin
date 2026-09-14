@@ -34,21 +34,9 @@ export type ProjectMilestone = {
   status: MilestoneStatus;
 };
 
-export type ApplicationStatus = "new" | "under-review" | "accepted" | "rejected";
-
-export type Application = {
-  id: string;
-  applicantLabel: string;
-  email: string;
-  phone: string;
-  role: string;
-  appliedDate: string;
-  status: ApplicationStatus;
-  whyJoin: string;
-  skills: string[];
-  portfolioUrl?: string;
-  resumeNote: string;
-};
+// Application / ApplicationStatus used to live here as a mock-data shape.
+// Real applicant data now comes from Supabase — see
+// src/lib/admin/real-applications.ts (AdminApplication, ApplicationStatus).
 
 export type AdminActivityCategory = "people" | "projects" | "tasks" | "interns" | "system";
 
