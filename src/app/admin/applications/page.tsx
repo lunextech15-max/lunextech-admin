@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ApplicationsContent from "@/components/admin/applications/ApplicationsContent";
-import { ADMIN_USER } from "@/lib/admin/mock-data";
+import { getAdminIdentity } from "@/lib/admin/identity";
 import { MOCK_APPLICATIONS } from "@/lib/admin/applications-data";
 
 export const metadata: Metadata = {
@@ -10,9 +10,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminApplicationsPage() {
+export default async function AdminApplicationsPage() {
+  const identity = await getAdminIdentity();
+
   return (
-    <AdminLayout active="applications" adminName={ADMIN_USER.name} adminInitials={ADMIN_USER.initials}>
+    <AdminLayout active="applications" adminName={identity.name} adminInitials={identity.initials}>
       <ApplicationsContent applications={MOCK_APPLICATIONS} />
     </AdminLayout>
   );

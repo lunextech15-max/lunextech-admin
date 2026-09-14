@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ChangePasswordForm from "@/components/admin/settings/ChangePasswordForm";
 import SignOutAllDevices from "@/components/admin/settings/SignOutAllDevices";
-import { ADMIN_USER } from "@/lib/admin/mock-data";
+import UpdateProfileForm from "@/components/admin/settings/UpdateProfileForm";
+import { getAdminIdentity } from "@/lib/admin/identity";
 import { getDisciplines } from "@/lib/staff/team-data";
 
 const DEPARTMENTS = ["Product Development", "Design", "Engineering", "Operations", "Management"];
@@ -15,11 +16,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  const identity = await getAdminIdentity();
+
   const disciplines = getDisciplines();
 
   return (
-    <AdminLayout active="settings" adminName={ADMIN_USER.name} adminInitials={ADMIN_USER.initials}>
+    <AdminLayout active="settings" adminName={identity.name} adminInitials={identity.initials}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <p className="text-[11px] font-medium tracking-[0.25em] text-soft-white/40 uppercase">
           09 <span className="text-accent">/ Settings</span>
@@ -89,25 +92,19 @@ export default function AdminSettingsPage() {
           </h2>
           <div className="mt-4 grid grid-cols-1 gap-5 border border-line p-6 sm:grid-cols-3 sm:p-8">
             <div>
-              <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Name</p>
-              <p className="mt-1.5 text-sm font-medium text-soft-white">{ADMIN_USER.name}</p>
-            </div>
-            <div>
               <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Email</p>
-              <p className="mt-1.5 text-sm font-medium text-soft-white">{ADMIN_USER.email}</p>
+              <p className="mt-1.5 text-sm font-medium text-soft-white">{identity.email}</p>
             </div>
             <div>
               <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Lunex ID</p>
-              <p className="mt-1.5 text-sm font-medium text-soft-white">{ADMIN_USER.lunexId}</p>
+              <p className="mt-1.5 text-sm font-medium text-soft-white">{identity.lunexId}</p>
             </div>
           </div>
-          <div className="mt-4">
-            <span
-              className="dash-quick-action is-disabled inline-block text-xs font-medium tracking-[0.15em] uppercase"
-              aria-disabled="true"
-            >
-              Update profile
-            </span>
+          <div className="mt-4 border border-line p-6 sm:p-8">
+            <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Update name</p>
+            <div className="mt-3">
+              <UpdateProfileForm initialName={identity.name} />
+            </div>
           </div>
         </section>
 

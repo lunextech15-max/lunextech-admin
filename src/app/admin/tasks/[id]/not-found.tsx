@@ -1,10 +1,12 @@
 import Link from "next/link";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { ADMIN_USER } from "@/lib/admin/mock-data";
+import { getAdminIdentity } from "@/lib/admin/identity";
 
-export default function AdminTaskNotFound() {
+export default async function AdminTaskNotFound() {
+  const identity = await getAdminIdentity();
+
   return (
-    <AdminLayout active="tasks" adminName={ADMIN_USER.name} adminInitials={ADMIN_USER.initials}>
+    <AdminLayout active="tasks" adminName={identity.name} adminInitials={identity.initials}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <p className="text-[11px] font-medium tracking-[0.25em] text-soft-white/40 uppercase">
           04 <span className="text-accent">/ Tasks</span>

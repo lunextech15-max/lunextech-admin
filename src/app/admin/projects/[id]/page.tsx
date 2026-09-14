@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ProgressIndicator from "@/components/staff/dashboard/ProgressIndicator";
 import AdminProjectWorkspace from "@/components/admin/projects/AdminProjectWorkspace";
-import { ADMIN_USER } from "@/lib/admin/mock-data";
+import { getAdminIdentity } from "@/lib/admin/identity";
 import { MOCK_PROJECTS } from "@/lib/staff/projects-data";
 import { getProjectMilestones } from "@/lib/admin/milestones-data";
 
@@ -30,12 +30,14 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default async function AdminProjectDetailPage({ params }: PageProps<"/admin/projects/[id]">) {
+  const identity = await getAdminIdentity();
+
   const { id } = await params;
   const project = MOCK_PROJECTS.find((p) => p.code === id);
   if (!project) notFound();
 
   return (
-    <AdminLayout active="projects" adminName={ADMIN_USER.name} adminInitials={ADMIN_USER.initials}>
+    <AdminLayout active="projects" adminName={identity.name} adminInitials={identity.initials}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <Link href="/admin/projects" className="dash-metric-link text-xs font-medium tracking-[0.15em] uppercase">
           ← All projects

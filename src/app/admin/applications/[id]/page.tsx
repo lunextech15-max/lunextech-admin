@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ApplicationActions from "@/components/admin/applications/ApplicationActions";
-import { ADMIN_USER } from "@/lib/admin/mock-data";
+import { getAdminIdentity } from "@/lib/admin/identity";
 import { MOCK_APPLICATIONS } from "@/lib/admin/applications-data";
 
 export function generateStaticParams() {
@@ -20,12 +20,14 @@ export async function generateMetadata({ params }: PageProps<"/admin/application
 }
 
 export default async function AdminApplicationDetailPage({ params }: PageProps<"/admin/applications/[id]">) {
+  const identity = await getAdminIdentity();
+
   const { id } = await params;
   const application = MOCK_APPLICATIONS.find((a) => a.id === id);
   if (!application) notFound();
 
   return (
-    <AdminLayout active="applications" adminName={ADMIN_USER.name} adminInitials={ADMIN_USER.initials}>
+    <AdminLayout active="applications" adminName={identity.name} adminInitials={identity.initials}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <Link
           href="/admin/applications"

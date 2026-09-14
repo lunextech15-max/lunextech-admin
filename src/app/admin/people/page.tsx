@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import PeopleContent from "@/components/admin/people/PeopleContent";
-import { ADMIN_USER } from "@/lib/admin/mock-data";
+import { getAdminIdentity } from "@/lib/admin/identity";
 import { getAllPeople, STAFF_LUNEX_IDS, ADMIN_INTERNS } from "@/lib/admin/people-data";
 import { MOCK_TEAM } from "@/lib/staff/team-data";
 
@@ -12,12 +12,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminPeoplePage() {
+export default async function AdminPeoplePage() {
+  const identity = await getAdminIdentity();
+
   const nextStaffNumber = Object.keys(STAFF_LUNEX_IDS).length + 1;
   const nextInternNumber = ADMIN_INTERNS.length + 1;
 
   return (
-    <AdminLayout active="people" adminName={ADMIN_USER.name} adminInitials={ADMIN_USER.initials}>
+    <AdminLayout active="people" adminName={identity.name} adminInitials={identity.initials}>
       <Suspense fallback={null}>
         <PeopleContent
           initialPeople={getAllPeople()}

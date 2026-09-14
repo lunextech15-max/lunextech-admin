@@ -5,7 +5,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import TaskWorkspace from "@/components/staff/tasks/TaskWorkspace";
 import InternTaskWorkspace from "@/components/intern/tasks/InternTaskWorkspace";
 import AdminTaskMeta from "@/components/admin/tasks/AdminTaskMeta";
-import { ADMIN_USER } from "@/lib/admin/mock-data";
+import { getAdminIdentity } from "@/lib/admin/identity";
 import { MOCK_TASKS } from "@/lib/staff/tasks-data";
 import { INTERN_TASKS } from "@/lib/intern/mock-data";
 import { MOCK_PROJECTS } from "@/lib/staff/projects-data";
@@ -24,6 +24,8 @@ export async function generateMetadata({ params }: PageProps<"/admin/tasks/[id]"
 }
 
 export default async function AdminTaskDetailPage({ params }: PageProps<"/admin/tasks/[id]">) {
+  const identity = await getAdminIdentity();
+
   const { id } = await params;
   const staffTask = MOCK_TASKS.find((t) => t.id === id);
   const internTask = staffTask ? undefined : INTERN_TASKS.find((t) => t.id === id);
@@ -32,7 +34,7 @@ export default async function AdminTaskDetailPage({ params }: PageProps<"/admin/
   const project = staffTask ? MOCK_PROJECTS.find((p) => p.code === staffTask.projectId) : undefined;
 
   return (
-    <AdminLayout active="tasks" adminName={ADMIN_USER.name} adminInitials={ADMIN_USER.initials}>
+    <AdminLayout active="tasks" adminName={identity.name} adminInitials={identity.initials}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <Link href="/admin/tasks" className="dash-metric-link text-xs font-medium tracking-[0.15em] uppercase">
           ← All tasks

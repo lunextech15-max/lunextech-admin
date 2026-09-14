@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import AnnouncementsContent from "@/components/admin/announcements/AnnouncementsContent";
-import { ADMIN_USER } from "@/lib/admin/mock-data";
+import { getAdminIdentity } from "@/lib/admin/identity";
 import { MOCK_ANNOUNCEMENTS } from "@/lib/staff/announcements-data";
 
 export const metadata: Metadata = {
@@ -11,9 +11,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminAnnouncementsPage() {
+export default async function AdminAnnouncementsPage() {
+  const identity = await getAdminIdentity();
+
   return (
-    <AdminLayout active="announcements" adminName={ADMIN_USER.name} adminInitials={ADMIN_USER.initials}>
+    <AdminLayout active="announcements" adminName={identity.name} adminInitials={identity.initials}>
       <Suspense fallback={null}>
         <AnnouncementsContent base={MOCK_ANNOUNCEMENTS} />
       </Suspense>

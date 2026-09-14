@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AdminLayout from "@/components/admin/AdminLayout";
 import InternsTable from "@/components/admin/interns/InternsTable";
-import { ADMIN_USER } from "@/lib/admin/mock-data";
+import { getAdminIdentity } from "@/lib/admin/identity";
 import { ADMIN_INTERNS, getAllPeople } from "@/lib/admin/people-data";
 import { getInternMetrics } from "@/lib/admin/metrics";
 
@@ -12,13 +12,15 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminInternsPage() {
+export default async function AdminInternsPage() {
+  const identity = await getAdminIdentity();
+
   const metrics = getInternMetrics();
   const people = getAllPeople();
   const supervisorName = (lunexId: string) => people.find((p) => p.lunexId === lunexId)?.name ?? "—";
 
   return (
-    <AdminLayout active="interns" adminName={ADMIN_USER.name} adminInitials={ADMIN_USER.initials}>
+    <AdminLayout active="interns" adminName={identity.name} adminInitials={identity.initials}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <div className="dash-fade flex flex-wrap items-start justify-between gap-6">
           <div>

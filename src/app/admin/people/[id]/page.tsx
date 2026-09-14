@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ProgressIndicator from "@/components/staff/dashboard/ProgressIndicator";
 import PersonActions from "@/components/admin/people/PersonActions";
-import { ADMIN_USER } from "@/lib/admin/mock-data";
+import { getAdminIdentity } from "@/lib/admin/identity";
 import { getPerson, getStaffMemberByLunexId, getInternByLunexId } from "@/lib/admin/people-data";
 import { getMemberProjects, getActiveProjectCount as getStaffActiveProjectCount } from "@/lib/staff/team-data";
 import { MOCK_TASKS } from "@/lib/staff/tasks-data";
@@ -19,6 +19,8 @@ export async function generateMetadata({ params }: PageProps<"/admin/people/[id]
 }
 
 export default async function AdminPersonDetailPage({ params }: PageProps<"/admin/people/[id]">) {
+  const identity = await getAdminIdentity();
+
   const { id } = await params;
   const person = getPerson(id);
   if (!person) notFound();
@@ -27,7 +29,7 @@ export default async function AdminPersonDetailPage({ params }: PageProps<"/admi
   const intern = person.role === "intern" ? getInternByLunexId(id) : undefined;
 
   return (
-    <AdminLayout active="people" adminName={ADMIN_USER.name} adminInitials={ADMIN_USER.initials}>
+    <AdminLayout active="people" adminName={identity.name} adminInitials={identity.initials}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <Link href="/admin/people" className="dash-metric-link text-xs font-medium tracking-[0.15em] uppercase">
           ← All people
