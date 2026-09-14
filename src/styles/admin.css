@@ -1,0 +1,175 @@
+/* Admin Command Center. Reuses .dash-* (sidebar shell, status, avatar,
+   metric, activity, progress), .proj-* (filters, search, tabs, rows) and
+   .task-* (checklist, comments, actions) from the Staff Portal's own
+   stylesheets — all loaded via AdminLayout. This file adds only what's
+   genuinely new: the data table, modal/dialog, and account-type picker. */
+
+/* ---------- table ---------- */
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(229, 229, 229, 0.4);
+  border-bottom: 1px solid var(--color-line);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 13px;
+  color: var(--color-soft-white);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr {
+  transition: background-color 0.3s ease;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(229, 229, 229, 0.02);
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table-link {
+  color: rgba(229, 229, 229, 0.6);
+  transition: color 0.3s ease;
+}
+
+.admin-table-link:hover,
+.admin-table-link:focus-visible {
+  color: var(--color-accent);
+}
+
+/* ---------- modal / dialog ---------- */
+
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.72);
+  padding: 5vh 1.25rem;
+}
+
+.admin-modal {
+  width: 100%;
+  max-width: 560px;
+  border: 1px solid var(--color-line);
+  background: var(--color-carbon);
+  padding: 2rem;
+}
+
+@media (min-width: 640px) {
+  .admin-modal {
+    padding: 2.5rem;
+  }
+}
+
+.admin-modal-close {
+  color: rgba(229, 229, 229, 0.45);
+  transition: color 0.3s ease;
+}
+
+.admin-modal-close:hover,
+.admin-modal-close:focus-visible {
+  color: var(--color-accent);
+}
+
+/* ---------- account type picker ---------- */
+
+.admin-type-option {
+  flex: 1;
+  border: 1px solid var(--color-line);
+  padding: 1rem;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(229, 229, 229, 0.55);
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.admin-type-option.is-active {
+  border-color: var(--color-accent);
+  color: var(--color-soft-white);
+  background: rgba(255, 26, 26, 0.06);
+}
+
+/* ---------- form field (reuses .profile-input's visual language) ---------- */
+
+.admin-input,
+.admin-select,
+.admin-textarea {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--color-line);
+  padding: 0.7rem 0.9rem;
+  font-size: 13px;
+  color: var(--color-soft-white);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.admin-select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, rgba(229, 229, 229, 0.4) 50%),
+    linear-gradient(135deg, rgba(229, 229, 229, 0.4) 50%, transparent 50%);
+  background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.admin-textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.admin-input:focus,
+.admin-select:focus,
+.admin-textarea:focus {
+  border-color: var(--color-accent);
+}
+
+/* ---------- admin task row (adds an "assigned to" column to .task-row) --- */
+
+@media (min-width: 1024px) {
+  .admin-task-row {
+    grid-template-columns: 1.8fr 0.9fr 0.7fr 0.9fr 0.7fr auto !important;
+  }
+}
+
+/* ---------- danger action ---------- */
+
+.admin-danger {
+  border-color: rgba(255, 26, 26, 0.4) !important;
+  color: var(--color-accent) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-table tbody tr,
+  .admin-table-link,
+  .admin-modal-close,
+  .admin-type-option,
+  .admin-input,
+  .admin-select,
+  .admin-textarea {
+    transition: none;
+  }
+}

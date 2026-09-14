@@ -1,0 +1,110 @@
+/* Staff Portal — 05 My Tasks. Reuses .proj-filter/.proj-search (from
+   staff-projects.css) and .dash-status/.dash-team-avatar (from
+   staff-dashboard.css) — both already loaded by StaffLayout — plus the
+   task-row layout specific to this page. */
+
+.task-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--color-line);
+  transition: padding-left 0.3s ease;
+}
+
+.task-row:first-child {
+  border-top: none;
+}
+
+.task-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-accent);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.task-row:hover {
+  padding-left: 0.75rem;
+}
+
+.task-row:hover::before {
+  transform: scaleY(1);
+}
+
+.task-row-title {
+  transition: color 0.3s ease;
+}
+
+.task-row:hover .task-row-title {
+  color: var(--color-soft-white);
+}
+
+.task-row-arrow {
+  opacity: 0;
+  color: rgba(229, 229, 229, 0.35);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.task-row:hover .task-row-arrow {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+@media (min-width: 1024px) {
+  .task-row {
+    grid-template-columns: 2fr 0.8fr 1fr 0.8fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+  }
+}
+
+.task-priority {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.task-priority--high {
+  color: var(--color-accent);
+}
+
+.task-priority--medium {
+  color: var(--color-soft-white);
+}
+
+.task-priority--low {
+  color: rgba(229, 229, 229, 0.4);
+}
+
+.task-project-select {
+  background: transparent;
+  border: 1px solid var(--color-line);
+  padding: 0.6rem 0.85rem;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--color-soft-white);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.task-project-select:focus {
+  border-color: var(--color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-row,
+  .task-row::before,
+  .task-row-title,
+  .task-row-arrow,
+  .task-project-select {
+    transition: none;
+  }
+}

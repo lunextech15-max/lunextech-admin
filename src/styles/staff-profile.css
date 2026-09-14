@@ -1,0 +1,58 @@
+/* Staff Portal — 09 Profile. Reuses .dash-avatar, .dash-status,
+   .dash-metric-link, .dash-activity-item (staff-dashboard.css) and
+   .team-skill (staff-team.css), already loaded by StaffLayout — plus the
+   edit-form and skill-chip styles specific to this page. */
+
+.profile-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.6rem 0;
+  font-size: 14px;
+  color: var(--color-soft-white);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.profile-input:focus {
+  border-color: var(--color-accent);
+}
+
+.profile-skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--color-line);
+  padding: 0.3rem 0.7rem;
+  font-size: 12px;
+  color: var(--color-soft-white);
+}
+
+.profile-skill-remove {
+  color: rgba(229, 229, 229, 0.4);
+  transition: color 0.3s ease;
+}
+
+.profile-skill-remove:hover,
+.profile-skill-remove:focus-visible {
+  color: var(--color-accent);
+}
+
+.profile-edit-toggle {
+  color: rgba(229, 229, 229, 0.6);
+  transition: color 0.3s ease;
+}
+
+.profile-edit-toggle:hover,
+.profile-edit-toggle:focus-visible {
+  color: var(--color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-input,
+  .profile-skill-remove,
+  .profile-edit-toggle {
+    transition: none;
+  }
+}

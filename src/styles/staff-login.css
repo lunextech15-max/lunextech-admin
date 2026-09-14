@@ -1,0 +1,195 @@
+/* Staff Portal — 01 Entry & Login. Same brand language as the public site
+   (deep black, thin lines, red accent) but functional/organized rather than
+   cinematic: a fixed two-column workspace, not a scroll-driven story. */
+
+.staff-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--color-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+  background-size: 100px 100px;
+  opacity: 0.2;
+  -webkit-mask-image: radial-gradient(ellipse at 30% 30%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(ellipse at 30% 30%, #000 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.staff-grain {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.9 0 0 0 0 0.9 0 0 0 0 0.9 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+.staff-glow {
+  position: absolute;
+  left: 8%;
+  top: -10%;
+  width: 55vmax;
+  height: 55vmax;
+  background: radial-gradient(circle, rgba(255, 26, 26, 0.09) 0%, rgba(255, 26, 26, 0.03) 35%, transparent 65%);
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+/* ---------- entrance ---------- */
+
+.staff-fade {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: staff-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes staff-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- brand / logo ---------- */
+
+.staff-logo {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-soft-white);
+  transition: opacity 0.3s ease;
+}
+
+.staff-logo:hover,
+.staff-logo:focus-visible {
+  opacity: 0.85;
+}
+
+/* ---------- form fields ---------- */
+
+.staff-field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(229, 229, 229, 0.45);
+  margin-bottom: 0.6rem;
+}
+
+.staff-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.85rem 0;
+  padding-right: 2.25rem;
+  font-size: 15px;
+  color: var(--color-soft-white);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.staff-input::placeholder {
+  color: rgba(229, 229, 229, 0.25);
+}
+
+.staff-input:focus {
+  border-color: var(--color-accent);
+}
+
+.staff-input[aria-invalid="true"] {
+  border-color: var(--color-accent);
+}
+
+.staff-field {
+  position: relative;
+}
+
+.staff-toggle {
+  position: absolute;
+  right: 0;
+  bottom: 0.85rem;
+  color: rgba(229, 229, 229, 0.45);
+  transition: color 0.3s ease;
+}
+
+.staff-toggle:hover,
+.staff-toggle:focus-visible {
+  color: var(--color-soft-white);
+}
+
+.staff-error {
+  margin-top: 0.5rem;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+
+/* ---------- submit ---------- */
+
+.staff-submit {
+  position: relative;
+  overflow: hidden;
+}
+
+.staff-submit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 26, 26, 0.22) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.staff-submit:hover:not(:disabled)::before,
+.staff-submit:focus-visible::before {
+  opacity: 1;
+}
+
+.staff-submit-arrow {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.staff-submit:hover:not(:disabled) .staff-submit-arrow,
+.staff-submit:focus-visible .staff-submit-arrow {
+  transform: translateX(5px);
+}
+
+.staff-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- secondary / status ---------- */
+
+.staff-forgot {
+  color: rgba(229, 229, 229, 0.35);
+  cursor: not-allowed;
+}
+
+.staff-status {
+  border-left: 2px solid var(--color-line);
+  padding-left: 0.85rem;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: rgba(229, 229, 229, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .staff-fade {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .staff-logo,
+  .staff-input,
+  .staff-toggle,
+  .staff-submit::before,
+  .staff-submit-arrow {
+    transition: none;
+  }
+}

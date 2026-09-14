@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+:root {
+  --color-carbon: #0b0b0b;
+  --color-carbon-deep: #000000;
+  --color-soft-white: #e5e5e5;
+  --color-accent: #ff1a1a;
+  --color-accent-dim: #7a0d0d;
+  --color-line: #1a1a1a;
+}
+
+@theme inline {
+  --color-carbon: var(--color-carbon);
+  --color-carbon-deep: var(--color-carbon-deep);
+  --color-soft-white: var(--color-soft-white);
+  --color-accent: var(--color-accent);
+  --color-accent-dim: var(--color-accent-dim);
+  --color-line: var(--color-line);
+  --font-display: var(--font-orbitron);
+  --font-sans: var(--font-inter);
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a2a var(--color-carbon);
+  /* Keep the scrollbar gutter reserved while the loading screen locks scrolling,
+     so pinned sections measure the same width before and after it releases. */
+  scrollbar-gutter: stable;
+}
+
+body {
+  background: var(--color-carbon);
+  color: var(--color-soft-white);
+  font-family: var(--font-sans);
+}
+
+/* Legacy WebKit/Blink scrollbar (browsers without scrollbar-color support) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-carbon);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 999px;
+  border: 2px solid var(--color-carbon);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--color-carbon);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

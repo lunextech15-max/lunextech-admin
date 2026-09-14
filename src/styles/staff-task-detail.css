@@ -1,0 +1,167 @@
+/* Staff Portal — 06 Task Detail Workspace. Reuses .dash-status, .dash-avatar,
+   .dash-activity-item (staff-dashboard.css) and .task-priority
+   (staff-tasks.css), both already loaded on this route — plus checklist,
+   comment and action styles specific to this page. */
+
+.task-section {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: task-section-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes task-section-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.task-checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  width: 100%;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--color-line);
+  text-align: left;
+  color: rgba(229, 229, 229, 0.6);
+  transition: color 0.3s ease;
+}
+
+.task-checklist-item:first-child {
+  border-top: none;
+}
+
+.task-checklist-item:hover,
+.task-checklist-item:focus-visible {
+  color: var(--color-soft-white);
+}
+
+.task-checklist-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  border: 1px solid var(--color-line);
+  font-size: 11px;
+  color: transparent;
+  transition: border-color 0.3s ease, color 0.3s ease, background-color 0.3s ease;
+}
+
+.task-checklist-item[aria-checked="true"] .task-checklist-mark {
+  border-color: var(--color-accent);
+  background: rgba(255, 26, 26, 0.12);
+  color: var(--color-accent);
+}
+
+.task-checklist-item[aria-checked="true"] .task-checklist-label {
+  color: rgba(229, 229, 229, 0.45);
+  text-decoration: line-through;
+  text-decoration-color: rgba(229, 229, 229, 0.25);
+}
+
+/* ---------- task action ---------- */
+
+.task-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  overflow: hidden;
+  border: 1px solid rgba(229, 229, 229, 0.25);
+  padding: 0.85rem 1.5rem;
+  transition: border-color 0.3s ease;
+}
+
+.task-action:hover,
+.task-action:focus-visible {
+  border-color: var(--color-accent);
+}
+
+.task-action-arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.task-action:hover .task-action-arrow {
+  transform: translateX(4px);
+}
+
+/* ---------- assignee ---------- */
+
+.task-assignee {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+/* ---------- comments ---------- */
+
+.task-comment {
+  padding: 1.1rem 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.task-comment:first-child {
+  border-top: none;
+}
+
+.task-comment-input {
+  width: 100%;
+  min-height: 5rem;
+  resize: vertical;
+  background: transparent;
+  border: 1px solid var(--color-line);
+  padding: 0.85rem 1rem;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-soft-white);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.task-comment-input::placeholder {
+  color: rgba(229, 229, 229, 0.3);
+}
+
+.task-comment-input:focus {
+  border-color: var(--color-accent);
+}
+
+.task-comment-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-soft-white);
+  transition: color 0.3s ease;
+}
+
+.task-comment-submit:hover:not(:disabled),
+.task-comment-submit:focus-visible:not(:disabled) {
+  color: var(--color-accent);
+}
+
+.task-comment-submit:disabled {
+  color: rgba(229, 229, 229, 0.25);
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-checklist-item,
+  .task-checklist-mark,
+  .task-action,
+  .task-action-arrow,
+  .task-comment-input,
+  .task-comment-submit {
+    transition: none;
+  }
+
+  .task-section {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
