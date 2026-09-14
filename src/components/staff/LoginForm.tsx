@@ -17,7 +17,7 @@ type LoginResult = { ok: true; redirectTo: string } | { ok: false; message: stri
 // signs in with that email + password. This deployment is the admin-only
 // portal, so any non-admin role is signed back out immediately — staff and
 // intern accounts belong on the main LUNEX TECH portal. Generic error
-// messages throughout — never reveal whether a given Staff ID exists.
+// messages throughout — never reveal whether a given Admin ID exists.
 async function submitStaffLogin(credentials: { staffId: string; password: string }): Promise<LoginResult> {
   const supabase = createClient();
 
@@ -26,7 +26,7 @@ async function submitStaffLogin(credentials: { staffId: string; password: string
     .maybeSingle()) as { data: { email: string; role: string } | null; error: unknown };
 
   if (lookupError || !data?.email) {
-    return { ok: false, message: "Invalid Staff ID or password." };
+    return { ok: false, message: "Invalid Admin ID or password." };
   }
 
   const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -35,7 +35,7 @@ async function submitStaffLogin(credentials: { staffId: string; password: string
   });
 
   if (signInError) {
-    return { ok: false, message: "Invalid Staff ID or password." };
+    return { ok: false, message: "Invalid Admin ID or password." };
   }
 
   if (data.role !== "admin") {
@@ -62,7 +62,7 @@ export default function LoginForm() {
   const validate = (): Errors => {
     const next: Errors = {};
     if (!staffId.trim()) {
-      next.staffId = "Staff ID is required.";
+      next.staffId = "Admin ID is required.";
     }
     if (!password) {
       next.password = "Password is required.";
@@ -98,14 +98,14 @@ export default function LoginForm() {
     <form className="flex flex-col gap-7" onSubmit={handleSubmit} noValidate>
       <div className="staff-field">
         <label htmlFor={staffIdId} className="staff-field-label">
-          Staff ID
+          Admin ID
         </label>
         <input
           id={staffIdId}
           name="staffId"
           type="text"
           autoComplete="username"
-          placeholder="e.g. LX-014"
+          placeholder="e.g. ADMIN-001"
           className="staff-input"
           value={staffId}
           onChange={(event) => setStaffId(event.target.value)}

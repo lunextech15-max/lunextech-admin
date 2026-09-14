@@ -15,7 +15,7 @@ export default function StaffPortalLayout({ children }: { children: ReactNode })
         </Link>
 
         <span className="text-right text-[10px] font-medium tracking-[0.3em] text-soft-white/35 uppercase">
-          Internal system
+          Admin system
           <span className="text-accent"> / 01</span>
         </span>
       </header>
@@ -24,7 +24,7 @@ export default function StaffPortalLayout({ children }: { children: ReactNode })
 
       <footer className="staff-fade relative z-10 px-6 py-6 text-center md:px-10 lg:px-16">
         <p className="text-[10px] font-medium tracking-[0.25em] text-soft-white/30 uppercase">
-          Authorized personnel only.
+          Authorized administrators only.
         </p>
       </footer>
     </div>

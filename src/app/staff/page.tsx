@@ -3,8 +3,8 @@ import StaffPortalLayout from "@/components/staff/StaffPortalLayout";
 import LoginForm from "@/components/staff/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Staff Portal — LUNEX TECH",
-  description: "Internal LUNEX TECH staff workspace access.",
+  title: "Admin — LUNEX TECH",
+  description: "LUNEX TECH admin command center access.",
   robots: { index: false, follow: false },
 };
 
@@ -18,13 +18,13 @@ export default function StaffPortalPage() {
             WELCOME BACK.
           </h1>
           <p className="mt-3 font-display text-[9vw] font-black leading-[0.98] tracking-tight text-soft-white sm:text-[5.5vw] lg:text-[2.8vw] xl:text-[2.4rem]">
-            ACCESS THE <span className="text-accent">WORKSPACE.</span>
+            ACCESS THE <span className="text-accent">COMMAND CENTER.</span>
           </p>
 
           <div className="mt-10 flex items-center gap-4 border-l border-line pl-5 lg:mt-14">
             <p className="text-xs leading-relaxed text-soft-white/50 sm:text-sm">
-              Sign in with your LUNEX TECH staff credentials to reach internal
-              tools, projects and systems.
+              Sign in with your LUNEX TECH admin credentials. This system is
+              restricted to authorized administrators only.
             </p>
           </div>
         </div>
