@@ -27,6 +27,10 @@ export default function AdminLayout({
 
   return (
     <div className="dash-shell">
+      <a href="#admin-main-content" className="admin-skip-link">
+        Skip to content
+      </a>
+
       <aside className="dash-sidebar dash-sidebar--desktop" aria-label="Admin Command Center">
         <AdminSidebar active={active} adminName={adminName} adminInitials={adminInitials} />
       </aside>
@@ -79,7 +83,9 @@ export default function AdminLayout({
           </button>
         </header>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main id="admin-main-content" className="min-w-0 flex-1">
+          {children}
+        </main>
       </div>
     </div>
   );

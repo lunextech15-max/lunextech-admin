@@ -9,10 +9,15 @@ const STATUS_LABEL: Record<ApplicationStatus, string> = {
   rejected: "Rejected",
 };
 
+// Accent (red) is reserved for genuinely time-sensitive states — only
+// "interview" (something scheduled) gets it here. "new" and "under-review"
+// are this table's most common, routine states; giving them the same red
+// as "needs attention"/destructive actions elsewhere diluted what the
+// accent means on the busiest screen in the admin panel.
 const STATUS_CLASS: Record<ApplicationStatus, string> = {
-  new: "dash-status--in-progress",
-  "under-review": "dash-status--in-review",
-  interview: "dash-status--review",
+  new: "dash-status--planning",
+  "under-review": "dash-status--review",
+  interview: "dash-status--in-progress",
   accepted: "dash-status--completed",
   rejected: "dash-status--todo",
 };

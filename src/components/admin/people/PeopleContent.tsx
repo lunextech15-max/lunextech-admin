@@ -134,13 +134,12 @@ export default function PeopleContent({
         className="dash-fade mt-8 flex flex-col gap-4 border-y border-line py-5 lg:flex-row lg:items-center lg:justify-between"
         style={{ animationDelay: "0.12s" }}
       >
-        <div role="tablist" aria-label="Filter people" className="flex flex-wrap items-center gap-6">
+        <div role="group" aria-label="Filter people" className="flex flex-wrap items-center gap-6">
           {FILTERS.map((f) => (
             <button
               key={f.id}
               type="button"
-              role="tab"
-              aria-selected={f.id === filter}
+              aria-pressed={f.id === filter}
               onClick={() => setFilter(f.id)}
               className={`proj-filter ${f.id === filter ? "is-active" : ""}`}
             >

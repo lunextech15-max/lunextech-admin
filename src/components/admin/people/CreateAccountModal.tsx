@@ -119,7 +119,11 @@ export default function CreateAccountModal({
             Copy credentials
           </button>
         </div>
-        {copyStatus && <p className="mt-3 text-[11px] text-accent uppercase tracking-[0.1em]">{copyStatus}</p>}
+        {copyStatus && (
+          <p role="status" aria-live="polite" className="mt-3 text-[11px] text-accent uppercase tracking-[0.1em]">
+            {copyStatus}
+          </p>
+        )}
 
         <div className="mt-8">
           <button
@@ -159,10 +163,14 @@ export default function CreateAccountModal({
 
   return (
     <Modal title="Create account." onClose={onClose}>
-      <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Account type</p>
-      <div className="mt-3 flex gap-3">
+      <p id="account-type-label" className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">
+        Account type
+      </p>
+      <div role="radiogroup" aria-labelledby="account-type-label" className="mt-3 flex gap-3">
         <button
           type="button"
+          role="radio"
+          aria-checked={type === "staff"}
           onClick={() => setType("staff")}
           className={`admin-type-option ${type === "staff" ? "is-active" : ""}`}
         >
@@ -170,6 +178,8 @@ export default function CreateAccountModal({
         </button>
         <button
           type="button"
+          role="radio"
+          aria-checked={type === "intern"}
           onClick={() => setType("intern")}
           className={`admin-type-option ${type === "intern" ? "is-active" : ""}`}
         >

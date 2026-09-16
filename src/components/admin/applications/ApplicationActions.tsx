@@ -108,7 +108,11 @@ export default function ApplicationActions({
         </button>
       </div>
 
-      {error && <p className="mt-3 text-[11px] text-accent">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-3 text-[11px] text-accent">
+          {error}
+        </p>
+      )}
 
       {status === "accepted" && (
         <div className="mt-6 border-t border-line pt-6">

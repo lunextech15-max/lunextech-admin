@@ -23,9 +23,9 @@ export default function PersonActions({ name, initialStatus }: { name: string; i
       </h2>
 
       <div className="mt-4 flex flex-wrap gap-3">
-        <span className="dash-quick-action is-disabled text-xs font-medium tracking-[0.15em] uppercase" aria-disabled="true">
+        <button type="button" disabled className="dash-quick-action is-disabled text-xs font-medium tracking-[0.15em] uppercase">
           Edit account
-        </span>
+        </button>
         <button
           type="button"
           onClick={() => setResetPassword(generateTempPassword())}

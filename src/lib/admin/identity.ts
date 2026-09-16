@@ -2,7 +2,15 @@
 // Layout header (avatar initials + name) and the Settings page, instead of
 // always showing the static ADMIN_USER placeholder. Falls back to
 // ADMIN_USER for any field Supabase doesn't have yet.
+//
+// Also the defense-in-depth admin-role gate: proxy.ts/middleware.ts is the
+// only other place that checks get_my_role(), so if every /admin/* page
+// calls this (they all already do, just for display data before this
+// change), a future middleware matcher mistake or edge-routing setup that
+// skips proxy.ts no longer leaves every Server Component's data fetch
+// exposed with zero fallback check.
 
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ADMIN_USER } from "@/lib/admin/mock-data";
 
@@ -18,12 +26,21 @@ export async function getAdminIdentity() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const name = (user?.user_metadata?.full_name as string | undefined)?.trim() || ADMIN_USER.name;
+  if (!user) {
+    redirect("/staff");
+  }
+
+  const { data: role } = (await supabase.rpc("get_my_role")) as { data: string | null };
+  if (role !== "admin") {
+    redirect("/staff");
+  }
+
+  const name = (user.user_metadata?.full_name as string | undefined)?.trim() || ADMIN_USER.name;
 
   return {
     name,
     initials: initialsFrom(name),
-    email: user?.email ?? ADMIN_USER.email,
+    email: user.email ?? ADMIN_USER.email,
     lunexId: ADMIN_USER.lunexId,
   };
 }

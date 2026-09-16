@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
 export default async function AdminOverviewPage() {
   const identity = await getAdminIdentity();
-  const applications = await getAllApplications();
+  const { applications } = await getAllApplications();
 
   const milestoneProject = MOCK_PROJECTS.find((project) =>
     getProjectMilestones(project.code).some((m) => m.status === "in-progress")

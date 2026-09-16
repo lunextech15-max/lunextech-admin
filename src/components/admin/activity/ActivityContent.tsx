@@ -69,7 +69,7 @@ export default function ActivityContent({ activity }: { activity: AdminActivityE
       </div>
 
       <div
-        role="tablist"
+        role="group"
         aria-label="Filter activity"
         className="dash-fade mt-8 flex flex-wrap items-center gap-6 border-y border-line py-5"
         style={{ animationDelay: "0.06s" }}
@@ -78,8 +78,7 @@ export default function ActivityContent({ activity }: { activity: AdminActivityE
           <button
             key={f.id}
             type="button"
-            role="tab"
-            aria-selected={f.id === filter}
+            aria-pressed={f.id === filter}
             onClick={() => setFilter(f.id)}
             className={`proj-filter ${f.id === filter ? "is-active" : ""}`}
           >

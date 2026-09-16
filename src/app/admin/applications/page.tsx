@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 
 export default async function AdminApplicationsPage() {
   const identity = await getAdminIdentity();
-  const applications = await getAllApplications();
+  const { applications, error } = await getAllApplications();
 
   return (
     <AdminLayout active="applications" adminName={identity.name} adminInitials={identity.initials}>
-      <ApplicationsContent applications={applications} />
+      <ApplicationsContent applications={applications} loadError={error} />
     </AdminLayout>
   );
 }

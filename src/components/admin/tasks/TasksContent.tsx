@@ -132,13 +132,12 @@ export default function TasksContent({
         className="dash-fade mt-8 flex flex-col gap-4 border-y border-line py-5 lg:flex-row lg:items-center lg:justify-between"
         style={{ animationDelay: "0.12s" }}
       >
-        <div role="tablist" aria-label="Filter tasks" className="flex flex-wrap items-center gap-6">
+        <div role="group" aria-label="Filter tasks" className="flex flex-wrap items-center gap-6">
           {FILTERS.map((f) => (
             <button
               key={f.id}
               type="button"
-              role="tab"
-              aria-selected={f.id === statusFilter}
+              aria-pressed={f.id === statusFilter}
               onClick={() => setStatusFilter(f.id)}
               className={`proj-filter ${f.id === statusFilter ? "is-active" : ""}`}
             >

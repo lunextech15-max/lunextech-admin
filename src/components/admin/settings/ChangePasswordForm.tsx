@@ -72,7 +72,11 @@ export default function ChangePasswordForm() {
         >
           {pending ? "Updating…" : "Change password"}
         </button>
-        {message && <p className="text-[11px] text-accent uppercase tracking-[0.1em]">{message}</p>}
+        {message && (
+          <p role="status" aria-live="polite" className="text-[11px] text-accent uppercase tracking-[0.1em]">
+            {message}
+          </p>
+        )}
       </div>
     </form>
   );

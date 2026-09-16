@@ -65,27 +65,31 @@ export default function AdminProjectWorkspace({
         >
           + Create task
         </Link>
-        <span
+        <button
+          type="button"
+          disabled
           className="dash-quick-action is-disabled text-xs font-medium tracking-[0.15em] uppercase"
-          aria-disabled="true"
         >
           Edit project
-        </span>
-        <span
+        </button>
+        <button
+          type="button"
+          disabled
           className="dash-quick-action is-disabled text-xs font-medium tracking-[0.15em] uppercase"
-          aria-disabled="true"
         >
           Assign team members
-        </span>
+        </button>
       </div>
 
       <div role="tablist" aria-label="Project workspace" className="proj-workspace-nav mt-8 border-b border-line">
         {SECTIONS.map((s, index) => (
           <button
             key={s.id}
+            id={`tab-${s.id}`}
             type="button"
             role="tab"
             aria-selected={s.id === section}
+            aria-controls={`panel-${s.id}`}
             onClick={() => setSection(s.id)}
             className={`proj-tab ${s.id === section ? "is-active" : ""}`}
           >
@@ -95,7 +99,14 @@ export default function AdminProjectWorkspace({
         ))}
       </div>
 
-      <div key={section} className="proj-section mt-8">
+      <div
+        key={section}
+        id={`panel-${section}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${section}`}
+        tabIndex={0}
+        className="proj-section mt-8"
+      >
         {section === "overview" && <ProjectOverview project={{ ...project, status }} />}
         {section === "tasks" && <ProjectTaskList tasks={getProjectTasks(project.code)} />}
         {section === "team" && (

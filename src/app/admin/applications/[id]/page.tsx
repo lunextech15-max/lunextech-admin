@@ -5,6 +5,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import ApplicationActions from "@/components/admin/applications/ApplicationActions";
 import { getAdminIdentity } from "@/lib/admin/identity";
 import { getApplicationById } from "@/lib/admin/real-applications";
+import { safeHref } from "@/lib/admin/application-types";
 
 export async function generateMetadata({ params }: PageProps<"/admin/applications/[id]">): Promise<Metadata> {
   const { id } = await params;
@@ -152,42 +153,54 @@ export default async function AdminApplicationDetailPage({ params }: PageProps<"
             {application.portfolio && (
               <div>
                 <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Portfolio</p>
-                <a
-                  href={application.portfolio}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="dash-metric-link mt-1.5 inline-block text-sm"
-                >
-                  {application.portfolio}
-                </a>
+                {safeHref(application.portfolio) ? (
+                  <a
+                    href={safeHref(application.portfolio)!}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="dash-metric-link mt-1.5 inline-block text-sm"
+                  >
+                    {application.portfolio}
+                  </a>
+                ) : (
+                  <p className="mt-1.5 text-sm text-soft-white/70">{application.portfolio}</p>
+                )}
               </div>
             )}
 
             {application.github && (
               <div>
                 <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">GitHub</p>
-                <a
-                  href={application.github}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="dash-metric-link mt-1.5 inline-block text-sm"
-                >
-                  {application.github}
-                </a>
+                {safeHref(application.github) ? (
+                  <a
+                    href={safeHref(application.github)!}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="dash-metric-link mt-1.5 inline-block text-sm"
+                  >
+                    {application.github}
+                  </a>
+                ) : (
+                  <p className="mt-1.5 text-sm text-soft-white/70">{application.github}</p>
+                )}
               </div>
             )}
 
             {application.linkedin && (
               <div>
                 <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">LinkedIn</p>
-                <a
-                  href={application.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="dash-metric-link mt-1.5 inline-block text-sm"
-                >
-                  {application.linkedin}
-                </a>
+                {safeHref(application.linkedin) ? (
+                  <a
+                    href={safeHref(application.linkedin)!}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="dash-metric-link mt-1.5 inline-block text-sm"
+                  >
+                    {application.linkedin}
+                  </a>
+                ) : (
+                  <p className="mt-1.5 text-sm text-soft-white/70">{application.linkedin}</p>
+                )}
               </div>
             )}
 

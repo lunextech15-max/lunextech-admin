@@ -58,12 +58,16 @@ export default function CreateAnnouncementModal({
         </div>
 
         <div>
-          <p className="staff-field-label">Audience</p>
-          <div className="mt-2 flex gap-3">
+          <p id={`${titleId}-audience-label`} className="staff-field-label">
+            Audience
+          </p>
+          <div role="radiogroup" aria-labelledby={`${titleId}-audience-label`} className="mt-2 flex gap-3">
             {(["everyone", "staff", "intern"] as AnnouncementAudience[]).map((option) => (
               <button
                 key={option}
                 type="button"
+                role="radio"
+                aria-checked={audience === option}
                 onClick={() => setAudience(option)}
                 className={`admin-type-option ${audience === option ? "is-active" : ""}`}
               >
@@ -74,10 +78,14 @@ export default function CreateAnnouncementModal({
         </div>
 
         <div>
-          <p className="staff-field-label">Priority</p>
-          <div className="mt-2 flex gap-3">
+          <p id={`${titleId}-priority-label`} className="staff-field-label">
+            Priority
+          </p>
+          <div role="radiogroup" aria-labelledby={`${titleId}-priority-label`} className="mt-2 flex gap-3">
             <button
               type="button"
+              role="radio"
+              aria-checked={!important}
               onClick={() => setImportant(false)}
               className={`admin-type-option ${!important ? "is-active" : ""}`}
             >
@@ -85,6 +93,8 @@ export default function CreateAnnouncementModal({
             </button>
             <button
               type="button"
+              role="radio"
+              aria-checked={important}
               onClick={() => setImportant(true)}
               className={`admin-type-option ${important ? "is-active" : ""}`}
             >

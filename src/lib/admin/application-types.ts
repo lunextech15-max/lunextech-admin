@@ -3,6 +3,15 @@
 // See real-applications.ts (server fetch) and
 // real-applications-client.ts (client update).
 
+// applications/job_applications are insert-only from the public site — any
+// applicant can put anything in portfolio/github/linkedin, including a
+// javascript: URI. Only ever render these as a clickable href if they're a
+// real http(s) link; otherwise show the raw text (still safe — React
+// escapes it) so it can't execute in an admin's authenticated session.
+export function safeHref(url: string): string | null {
+  return /^https?:\/\//i.test(url.trim()) ? url.trim() : null;
+}
+
 export type ApplicationKind = "internship" | "job";
 export type ApplicationStatus = "new" | "under-review" | "interview" | "accepted" | "rejected";
 

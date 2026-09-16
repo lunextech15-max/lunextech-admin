@@ -23,7 +23,13 @@ const KIND_FILTERS: { id: KindFilter; label: string }[] = [
   { id: "job", label: "Job" },
 ];
 
-export default function ApplicationsContent({ applications }: { applications: AdminApplication[] }) {
+export default function ApplicationsContent({
+  applications,
+  loadError = false,
+}: {
+  applications: AdminApplication[];
+  loadError?: boolean;
+}) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
@@ -58,6 +64,12 @@ export default function ApplicationsContent({ applications }: { applications: Ad
         </p>
       </div>
 
+      {loadError && (
+        <p role="alert" className="dash-fade mt-6 border border-line px-5 py-3 text-sm text-accent">
+          Couldn&apos;t load some applications — the list below may be incomplete. Try refreshing the page.
+        </p>
+      )}
+
       <div className="dash-fade mt-8 flex flex-wrap gap-x-8 gap-y-3" style={{ animationDelay: "0.06s" }}>
         {[
           { label: "New", value: counts.new },
@@ -82,13 +94,12 @@ export default function ApplicationsContent({ applications }: { applications: Ad
         style={{ animationDelay: "0.12s" }}
       >
         <div className="flex flex-col gap-4">
-          <div role="tablist" aria-label="Filter by type" className="flex flex-wrap items-center gap-6">
+          <div role="group" aria-label="Filter by type" className="flex flex-wrap items-center gap-6">
             {KIND_FILTERS.map((f) => (
               <button
                 key={f.id}
                 type="button"
-                role="tab"
-                aria-selected={f.id === kindFilter}
+                aria-pressed={f.id === kindFilter}
                 onClick={() => setKindFilter(f.id)}
                 className={`proj-filter ${f.id === kindFilter ? "is-active" : ""}`}
               >
@@ -96,13 +107,12 @@ export default function ApplicationsContent({ applications }: { applications: Ad
               </button>
             ))}
           </div>
-          <div role="tablist" aria-label="Filter by status" className="flex flex-wrap items-center gap-6">
+          <div role="group" aria-label="Filter by status" className="flex flex-wrap items-center gap-6">
             {STATUS_FILTERS.map((f) => (
               <button
                 key={f.id}
                 type="button"
-                role="tab"
-                aria-selected={f.id === statusFilter}
+                aria-pressed={f.id === statusFilter}
                 onClick={() => setStatusFilter(f.id)}
                 className={`proj-filter ${f.id === statusFilter ? "is-active" : ""}`}
               >
