@@ -7,6 +7,7 @@ export type AdminNavId =
   | "projects"
   | "tasks"
   | "interns"
+  | "attendance"
   | "applications"
   | "announcements"
   | "activity"
@@ -25,12 +26,13 @@ const MAIN_NAV: NavItem[] = [
   { id: "projects", number: "03", label: "Projects", href: "/admin/projects" },
   { id: "tasks", number: "04", label: "Tasks", href: "/admin/tasks" },
   { id: "interns", number: "05", label: "Interns", href: "/admin/interns" },
-  { id: "applications", number: "06", label: "Applications", href: "/admin/applications" },
-  { id: "announcements", number: "07", label: "Announcements", href: "/admin/announcements" },
-  { id: "activity", number: "08", label: "Activity", href: "/admin/activity" },
+  { id: "attendance", number: "06", label: "Attendance", href: "/admin/attendance" },
+  { id: "applications", number: "07", label: "Applications", href: "/admin/applications" },
+  { id: "announcements", number: "08", label: "Announcements", href: "/admin/announcements" },
+  { id: "activity", number: "09", label: "Activity", href: "/admin/activity" },
 ];
 
-const SETTINGS_NAV: NavItem = { id: "settings", number: "09", label: "Settings", href: "/admin/settings" };
+const SETTINGS_NAV: NavItem = { id: "settings", number: "10", label: "Settings", href: "/admin/settings" };
 
 export default function AdminSidebar({
   active,
