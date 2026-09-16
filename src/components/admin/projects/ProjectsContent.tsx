@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import AdminProjectRow from "./AdminProjectRow";
 import CreateProjectModal from "./CreateProjectModal";
 import EmptyState from "@/components/admin/EmptyState";
@@ -26,35 +26,25 @@ function matches(project: StaffProject, filter: Filter) {
   return project.status === "archived";
 }
 
-function loadProjects(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 450));
-}
-
 export default function ProjectsContent({
   projects,
+  loadError = false,
+  nextProjectCode,
   staff,
   interns,
 }: {
   projects: StaffProject[];
+  loadError?: boolean;
+  nextProjectCode: string;
   staff: PersonAccount[];
   interns: PersonAccount[];
 }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [modalOpen, setModalOpen] = useState(() => searchParams.get("new") === "1");
   const [createdMessage, setCreatedMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    loadProjects().then(() => {
-      if (!cancelled) setLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const counts = {
     active: projects.filter((p) => p.status === "in-progress" || p.status === "review").length,
@@ -69,17 +59,6 @@ export default function ProjectsContent({
       .filter((p) => matches(p, filter))
       .filter((p) => !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
   }, [projects, query, filter]);
-
-  if (loading) {
-    return (
-      <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
-        <div className="dash-skeleton h-4 w-32" />
-        <div className="dash-skeleton mt-4 h-10 w-56" />
-        <div className="dash-skeleton mt-8 h-10 w-full" />
-        <div className="dash-skeleton mt-6 h-40" />
-      </div>
-    );
-  }
 
   return (
     <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
@@ -104,6 +83,12 @@ export default function ProjectsContent({
           </span>
         </button>
       </div>
+
+      {loadError && (
+        <p role="alert" className="dash-fade mt-6 border border-line px-5 py-3 text-sm text-accent">
+          Couldn&apos;t load the full project list — the list below may be incomplete. Try refreshing the page.
+        </p>
+      )}
 
       <div className="dash-fade mt-8 flex flex-wrap gap-x-8 gap-y-3" style={{ animationDelay: "0.06s" }}>
         {[
@@ -188,14 +173,14 @@ export default function ProjectsContent({
 
       {modalOpen && (
         <CreateProjectModal
+          nextProjectCode={nextProjectCode}
           staff={staff}
           interns={interns}
           onClose={() => setModalOpen(false)}
-          onCreate={(name) => {
+          onCreated={(project) => {
             setModalOpen(false);
-            setCreatedMessage(
-              `"${name}" was created locally for this session — it isn't saved to the shared project data yet.`
-            );
+            setCreatedMessage(`"${project.name}" was created.`);
+            router.refresh();
           }}
         />
       )}

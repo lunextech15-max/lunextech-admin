@@ -4,7 +4,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import TasksContent from "@/components/admin/tasks/TasksContent";
 import { getAdminIdentity } from "@/lib/admin/identity";
 import { getAllAdminTasks } from "@/lib/admin/tasks-view";
-import { MOCK_PROJECTS } from "@/lib/staff/projects-data";
+import { getAllProjects } from "@/lib/admin/projects";
 import { getAllPeople } from "@/lib/admin/team";
 
 export const metadata: Metadata = {
@@ -16,11 +16,12 @@ export const metadata: Metadata = {
 export default async function AdminTasksPage() {
   const identity = await getAdminIdentity();
   const { people } = await getAllPeople();
+  const { projects } = await getAllProjects();
 
   return (
     <AdminLayout active="tasks" adminName={identity.name} adminInitials={identity.initials}>
       <Suspense fallback={null}>
-        <TasksContent tasks={getAllAdminTasks()} projects={MOCK_PROJECTS} people={people} />
+        <TasksContent tasks={getAllAdminTasks()} projects={projects} people={people} />
       </Suspense>
     </AdminLayout>
   );

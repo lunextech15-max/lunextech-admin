@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import PeopleTable from "./PeopleTable";
 import CreateAccountModal from "./CreateAccountModal";
@@ -17,10 +17,6 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "inactive", label: "Inactive" },
 ];
 
-function loadPeople(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 450));
-}
-
 export default function PeopleContent({
   initialPeople,
   loadError = false,
@@ -35,21 +31,10 @@ export default function PeopleContent({
   supervisors: { lunexId: string; name: string }[];
 }) {
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
   const [people, setPeople] = useState(initialPeople);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [modalOpen, setModalOpen] = useState(() => searchParams.get("new") === "1");
-
-  useEffect(() => {
-    let cancelled = false;
-    loadPeople().then(() => {
-      if (!cancelled) setLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const total = people.length;
   const staffCount = people.filter((p) => p.role === "staff").length;
@@ -76,16 +61,6 @@ export default function PeopleContent({
       );
   }, [people, query, filter]);
 
-  if (loading) {
-    return (
-      <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
-        <div className="dash-skeleton h-4 w-32" />
-        <div className="dash-skeleton mt-4 h-10 w-56" />
-        <div className="dash-skeleton mt-8 h-10 w-full" />
-        <div className="dash-skeleton mt-6 h-64" />
-      </div>
-    );
-  }
 
   return (
     <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">

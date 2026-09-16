@@ -1,14 +1,15 @@
 // Computed Command Center metrics — always derived from the underlying
 // project/task/people data, never hardcoded independently.
 //
-// People-derived metrics (team size, active interns) now read the real
-// public.staff roster (see team.ts). Project/task-derived metrics still
-// read MOCK_PROJECTS/MOCK_TASKS — those are a later phase.
+// People- and project-derived metrics (team size, active interns, active
+// projects) now read the real public.staff/public.projects tables (see
+// team.ts / projects.ts). Task-derived metrics still read MOCK_TASKS —
+// that's a later phase.
 
-import { MOCK_PROJECTS } from "@/lib/staff/projects-data";
 import { MOCK_TASKS } from "@/lib/staff/tasks-data";
 import { INTERN_TASKS } from "@/lib/intern/mock-data";
 import { getAllStaff } from "./team";
+import { getAllProjects } from "./projects";
 import type { AdminApplication } from "./application-types";
 
 // Anchors "today" to the same date this whole mock dataset's task due-dates
@@ -16,16 +17,18 @@ import type { AdminApplication } from "./application-types";
 // consistent — not tied to the real system clock.
 export const ADMIN_TODAY = "2026-09-14";
 
-export function getActiveProjectCount(): number {
-  return MOCK_PROJECTS.filter((p) => p.status === "in-progress" || p.status === "review").length;
+export async function getActiveProjectCount(): Promise<number> {
+  const { projects } = await getAllProjects();
+  return projects.filter((p) => p.status === "in-progress" || p.status === "review").length;
 }
 
-export function getProjectStatusCounts() {
+export async function getProjectStatusCounts() {
+  const { projects } = await getAllProjects();
   return {
-    active: MOCK_PROJECTS.filter((p) => p.status === "in-progress" || p.status === "review").length,
-    completed: MOCK_PROJECTS.filter((p) => p.status === "completed").length,
-    upcoming: MOCK_PROJECTS.filter((p) => p.status === "planning").length,
-    onHold: MOCK_PROJECTS.filter((p) => p.status === "archived").length,
+    active: projects.filter((p) => p.status === "in-progress" || p.status === "review").length,
+    completed: projects.filter((p) => p.status === "completed").length,
+    upcoming: projects.filter((p) => p.status === "planning").length,
+    onHold: projects.filter((p) => p.status === "archived").length,
   };
 }
 
@@ -86,14 +89,16 @@ export async function getInternMetrics() {
 }
 
 export async function getCompanyPulse() {
-  const projectDelivery =
-    Math.round(MOCK_PROJECTS.reduce((sum, p) => sum + p.progress, 0) / MOCK_PROJECTS.length) || 0;
+  const { projects } = await getAllProjects();
+  const projectDelivery = projects.length
+    ? Math.round(projects.reduce((sum, p) => sum + p.progress, 0) / projects.length)
+    : 0;
 
   const taskCounts = getTaskStatusCounts();
   const totalTasks = taskCounts.todo + taskCounts.inProgress + taskCounts.inReview + taskCounts.completed;
   const taskCompletion = totalTasks > 0 ? Math.round((taskCounts.completed / totalTasks) * 100) : 0;
 
-  const activeProjects = getActiveProjectCount();
+  const activeProjects = await getActiveProjectCount();
   const teamMemberCount = await getTeamMemberCount();
   const teamCapacity =
     teamMemberCount > 0 ? Math.min(100, Math.round((activeProjects / teamMemberCount) * 100 * 1.8)) : 0;

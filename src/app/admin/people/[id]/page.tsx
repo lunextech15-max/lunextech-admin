@@ -6,7 +6,7 @@ import ProgressIndicator from "@/components/staff/dashboard/ProgressIndicator";
 import PersonActions from "@/components/admin/people/PersonActions";
 import { getAdminIdentity } from "@/lib/admin/identity";
 import { getPerson } from "@/lib/admin/team";
-import { MOCK_PROJECTS } from "@/lib/staff/projects-data";
+import { getAllProjects } from "@/lib/admin/projects";
 import { MOCK_TASKS } from "@/lib/staff/tasks-data";
 
 export async function generateMetadata({ params }: PageProps<"/admin/people/[id]">): Promise<Metadata> {
@@ -25,11 +25,13 @@ export default async function AdminPersonDetailPage({ params }: PageProps<"/admi
   const person = await getPerson(id);
   if (!person) notFound();
 
-  // Work overview is matched by initials against the still-mock Projects/
-  // Tasks data (that migration is a later phase) — for the real roster
-  // this honestly comes back empty/zero rather than showing invented
-  // numbers, since no real project/task data references this person yet.
-  const projects = MOCK_PROJECTS.filter((p) => p.team.some((member) => member.initials === person.initials));
+  // Project membership is real (public.project_members). Tasks are still
+  // matched against the still-mock Tasks data (that migration is a later
+  // phase) — for the real roster this honestly comes back empty/zero
+  // rather than showing invented numbers, since no real task data
+  // references this person yet.
+  const { projects: allProjects } = await getAllProjects();
+  const projects = allProjects.filter((p) => p.team.some((member) => member.id === person.lunexId));
   const activeProjectCount = projects.filter((p) => p.status === "in-progress" || p.status === "review").length;
   const tasks = MOCK_TASKS.filter((t) => t.assigneeId === person.initials);
   const completedTasks = tasks.filter((t) => t.status === "completed").length;

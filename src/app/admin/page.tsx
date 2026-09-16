@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AdminLayout from "@/components/admin/AdminLayout";
 import AdminOverviewContent from "@/components/admin/overview/AdminOverviewContent";
 import { getAdminIdentity } from "@/lib/admin/identity";
-import { MOCK_PROJECTS } from "@/lib/staff/projects-data";
+import { getAllProjects } from "@/lib/admin/projects";
 import { getProjectMilestones } from "@/lib/admin/milestones-data";
 import { MOCK_ADMIN_ACTIVITY } from "@/lib/admin/activity-data";
 import { getAllApplications } from "@/lib/admin/real-applications";
@@ -25,13 +25,15 @@ export const metadata: Metadata = {
 export default async function AdminOverviewPage() {
   const identity = await getAdminIdentity();
   const { applications } = await getAllApplications();
-  const [teamMembers, activeInterns, pulse] = await Promise.all([
+  const { projects } = await getAllProjects();
+  const [teamMembers, activeInterns, activeProjects, pulse] = await Promise.all([
     getTeamMemberCount(),
     getActiveInternCount(),
+    getActiveProjectCount(),
     getCompanyPulse(),
   ]);
 
-  const milestoneProject = MOCK_PROJECTS.find((project) =>
+  const milestoneProject = projects.find((project) =>
     getProjectMilestones(project.code).some((m) => m.status === "in-progress")
   );
   const milestone = milestoneProject
@@ -41,7 +43,7 @@ export default async function AdminOverviewPage() {
   return (
     <AdminLayout active="overview" adminName={identity.name} adminInitials={identity.initials}>
       <AdminOverviewContent
-        activeProjects={getActiveProjectCount()}
+        activeProjects={activeProjects}
         teamMembers={teamMembers}
         activeInterns={activeInterns}
         openTasks={getOpenTaskCount()}

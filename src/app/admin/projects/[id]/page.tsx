@@ -5,16 +5,12 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import ProgressIndicator from "@/components/staff/dashboard/ProgressIndicator";
 import AdminProjectWorkspace from "@/components/admin/projects/AdminProjectWorkspace";
 import { getAdminIdentity } from "@/lib/admin/identity";
-import { MOCK_PROJECTS } from "@/lib/staff/projects-data";
+import { getProject } from "@/lib/admin/projects";
 import { getProjectMilestones } from "@/lib/admin/milestones-data";
-
-export function generateStaticParams() {
-  return MOCK_PROJECTS.map((project) => ({ id: project.code }));
-}
 
 export async function generateMetadata({ params }: PageProps<"/admin/projects/[id]">): Promise<Metadata> {
   const { id } = await params;
-  const project = MOCK_PROJECTS.find((p) => p.code === id);
+  const project = await getProject(id);
   return {
     title: project ? `${project.name} — LUNEX TECH Admin` : "Project — LUNEX TECH Admin",
     robots: { index: false, follow: false },
@@ -33,7 +29,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps<"/adm
   const identity = await getAdminIdentity();
 
   const { id } = await params;
-  const project = MOCK_PROJECTS.find((p) => p.code === id);
+  const project = await getProject(id);
   if (!project) notFound();
 
   return (
