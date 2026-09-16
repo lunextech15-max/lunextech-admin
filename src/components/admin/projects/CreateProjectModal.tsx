@@ -2,8 +2,7 @@
 
 import { useId, useState, type FormEvent } from "react";
 import Modal from "@/components/admin/Modal";
-import type { StaffTeamMember } from "@/lib/staff/types";
-import type { AdminIntern } from "@/lib/admin/people-data";
+import type { PersonAccount } from "@/lib/admin/types";
 
 const CATEGORIES = [
   "Digital Experience",
@@ -21,8 +20,8 @@ export default function CreateProjectModal({
   onClose,
   onCreate,
 }: {
-  staff: StaffTeamMember[];
-  interns: AdminIntern[];
+  staff: PersonAccount[];
+  interns: PersonAccount[];
   onClose: () => void;
   onCreate: (name: string) => void;
 }) {
@@ -101,8 +100,8 @@ export default function CreateProjectModal({
           </label>
           <select id={`${nameId}-staff`} className="admin-select mt-2" multiple size={4}>
             {staff.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name === "Team member" ? `${m.initials} — Team member` : m.name} ({m.role})
+              <option key={m.lunexId} value={m.lunexId}>
+                {m.name} ({m.title})
               </option>
             ))}
           </select>
@@ -115,7 +114,7 @@ export default function CreateProjectModal({
           <select id={`${nameId}-interns`} className="admin-select mt-2" multiple size={3}>
             {interns.map((i) => (
               <option key={i.lunexId} value={i.lunexId}>
-                {i.initials} — {i.internshipRole} ({i.lunexId})
+                {i.name} — {i.department} ({i.lunexId})
               </option>
             ))}
           </select>

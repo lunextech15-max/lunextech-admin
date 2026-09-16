@@ -2,15 +2,21 @@
 
 import { useId, useState, type FormEvent } from "react";
 import Modal from "@/components/admin/Modal";
+import { createStaffProfile } from "@/lib/admin/team-client";
 import type { AccountRole } from "@/lib/admin/types";
 
 type Step = "type" | "form" | "created";
 
-type CreatedAccount = {
+export type CreatedAccount = {
   lunexId: string;
   name: string;
+  email: string;
   role: AccountRole;
-  tempPassword: string;
+  title: string;
+  department: string;
+  supervisorName?: string;
+  internshipStart?: string;
+  internshipEnd?: string;
 };
 
 const STAFF_ROLES = ["Staff Member", "Project Manager", "Developer", "Designer", "Other"];
@@ -22,10 +28,6 @@ const INTERNSHIP_ROLES = [
   "AI / Machine Learning",
   "Product Development",
 ];
-
-function generateTempPassword() {
-  return Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 6).toUpperCase();
-}
 
 export default function CreateAccountModal({
   nextStaffId,
@@ -49,37 +51,21 @@ export default function CreateAccountModal({
   const [step, setStep] = useState<Step>("type");
   const [type, setType] = useState<AccountRole>(initialType);
   const [created, setCreated] = useState<CreatedAccount | null>(null);
-  const [copyStatus, setCopyStatus] = useState<string | null>(null);
   const nameId = useId();
 
-  const handleCreate = (name: string) => {
-    const lunexId = type === "staff" ? nextStaffId : nextInternId;
-    const account: CreatedAccount = {
-      lunexId,
-      name,
-      role: type,
-      tempPassword: generateTempPassword(),
-    };
+  const handleCreated = (account: CreatedAccount) => {
     setCreated(account);
     setStep("created");
     onCreated(account);
   };
 
-  const copy = async (text: string, label: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopyStatus(`${label} copied.`);
-    } catch {
-      setCopyStatus("Couldn't copy — copy it manually.");
-    }
-  };
-
   if (step === "created" && created) {
     return (
-      <Modal title="Account created." onClose={onClose}>
+      <Modal title="Profile saved." onClose={onClose}>
         <p className="max-w-sm text-sm leading-relaxed text-soft-white/55">
-          Give this Lunex ID and temporary password to {created.name} — they&apos;ll use it to sign in for the first
-          time. This is not stored anywhere yet; there is no backend connected.
+          {created.name}&apos;s profile is now in the roster. To let them sign in, create their login in Supabase
+          Dashboard → Authentication → Users with the email below, then they can use this Staff ID to log in — this
+          app has no service-role key, so it can&apos;t create logins itself.
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-5 border border-line p-5">
@@ -92,38 +78,14 @@ export default function CreateAccountModal({
             <p className="mt-1.5 text-sm font-medium text-soft-white">{created.lunexId}</p>
           </div>
           <div>
+            <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Email</p>
+            <p className="mt-1.5 text-sm font-medium text-soft-white">{created.email}</p>
+          </div>
+          <div>
             <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">Role</p>
             <p className="mt-1.5 text-sm font-medium text-soft-white uppercase">{created.role}</p>
           </div>
-          <div>
-            <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">
-              Temporary password
-            </p>
-            <p className="mt-1.5 text-sm font-medium text-soft-white">{created.tempPassword}</p>
-          </div>
         </div>
-
-        <div className="mt-6 flex flex-wrap gap-6">
-          <button
-            type="button"
-            onClick={() => copy(created.lunexId, "Lunex ID")}
-            className="dash-metric-link text-xs font-medium tracking-[0.15em] uppercase"
-          >
-            Copy Lunex ID
-          </button>
-          <button
-            type="button"
-            onClick={() => copy(`Lunex ID: ${created.lunexId}\nPassword: ${created.tempPassword}`, "Credentials")}
-            className="dash-metric-link text-xs font-medium tracking-[0.15em] uppercase"
-          >
-            Copy credentials
-          </button>
-        </div>
-        {copyStatus && (
-          <p role="status" aria-live="polite" className="mt-3 text-[11px] text-accent uppercase tracking-[0.1em]">
-            {copyStatus}
-          </p>
-        )}
 
         <div className="mt-8">
           <button
@@ -155,7 +117,7 @@ export default function CreateAccountModal({
           initialName={initialName}
           initialEmail={initialEmail}
           onCancel={() => setStep("type")}
-          onSubmit={handleCreate}
+          onCreated={handleCreated}
         />
       </Modal>
     );
@@ -221,7 +183,7 @@ function AccountForm({
   initialName,
   initialEmail,
   onCancel,
-  onSubmit,
+  onCreated,
 }: {
   type: AccountRole;
   nameId: string;
@@ -233,26 +195,65 @@ function AccountForm({
   initialName: string;
   initialEmail: string;
   onCancel: () => void;
-  onSubmit: (name: string) => void;
+  onCreated: (account: CreatedAccount) => void;
 }) {
   const [name, setName] = useState(initialName);
   const [email, setEmail] = useState(initialEmail);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [staffRole, setStaffRole] = useState(staffRoles[0]);
+  const [department, setDepartment] = useState(departments[0]);
+  const [internshipRole, setInternshipRole] = useState(internshipRoles[0]);
+  const [supervisorId, setSupervisorId] = useState(supervisors[0]?.lunexId ?? "");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!name.trim() || !email.trim() || !password) {
+    if (!name.trim() || !email.trim()) {
       setError("Fill in all required fields.");
       return;
     }
-    if (password !== confirmPassword) {
-      setError("Passwords don't match.");
+    if (type === "intern" && (!startDate || !endDate)) {
+      setError("Start and end dates are required for an intern.");
       return;
     }
+
     setError(null);
-    onSubmit(name.trim());
+    setPending(true);
+
+    const { error: createError } = await createStaffProfile({
+      staffId: lunexId,
+      fullName: name.trim(),
+      email: email.trim(),
+      role: type,
+      title: type === "staff" ? staffRole : undefined,
+      department: type === "staff" ? department : undefined,
+      internshipRole: type === "intern" ? internshipRole : undefined,
+      supervisorStaffId: type === "intern" ? supervisorId || undefined : undefined,
+      internshipStart: type === "intern" ? startDate : undefined,
+      internshipEnd: type === "intern" ? endDate : undefined,
+    });
+
+    setPending(false);
+
+    if (createError) {
+      console.error("CreateAccountModal: createStaffProfile failed", createError);
+      setError(`Couldn't save this profile: ${createError}`);
+      return;
+    }
+
+    onCreated({
+      lunexId,
+      name: name.trim(),
+      email: email.trim(),
+      role: type,
+      title: type === "staff" ? staffRole : `${internshipRole} Intern`,
+      department: type === "staff" ? department : internshipRole,
+      supervisorName: type === "intern" ? supervisors.find((s) => s.lunexId === supervisorId)?.name : undefined,
+      internshipStart: type === "intern" ? startDate : undefined,
+      internshipEnd: type === "intern" ? endDate : undefined,
+    });
   };
 
   return (
@@ -295,7 +296,12 @@ function AccountForm({
             <label className="staff-field-label" htmlFor={`${nameId}-role`}>
               Role
             </label>
-            <select id={`${nameId}-role`} className="admin-select mt-2" defaultValue={staffRoles[0]}>
+            <select
+              id={`${nameId}-role`}
+              className="admin-select mt-2"
+              value={staffRole}
+              onChange={(e) => setStaffRole(e.target.value)}
+            >
               {staffRoles.map((role) => (
                 <option key={role}>{role}</option>
               ))}
@@ -305,7 +311,12 @@ function AccountForm({
             <label className="staff-field-label" htmlFor={`${nameId}-dept`}>
               Department
             </label>
-            <select id={`${nameId}-dept`} className="admin-select mt-2" defaultValue={departments[0]}>
+            <select
+              id={`${nameId}-dept`}
+              className="admin-select mt-2"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+            >
               {departments.map((dept) => (
                 <option key={dept}>{dept}</option>
               ))}
@@ -318,7 +329,12 @@ function AccountForm({
             <label className="staff-field-label" htmlFor={`${nameId}-role`}>
               Internship role
             </label>
-            <select id={`${nameId}-role`} className="admin-select mt-2" defaultValue={internshipRoles[0]}>
+            <select
+              id={`${nameId}-role`}
+              className="admin-select mt-2"
+              value={internshipRole}
+              onChange={(e) => setInternshipRole(e.target.value)}
+            >
               {internshipRoles.map((role) => (
                 <option key={role}>{role}</option>
               ))}
@@ -329,58 +345,52 @@ function AccountForm({
               <label className="staff-field-label" htmlFor={`${nameId}-start`}>
                 Start date
               </label>
-              <input id={`${nameId}-start`} type="date" className="admin-input mt-2" />
+              <input
+                id={`${nameId}-start`}
+                type="date"
+                className="admin-input mt-2"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+              />
             </div>
             <div>
               <label className="staff-field-label" htmlFor={`${nameId}-end`}>
                 End date
               </label>
-              <input id={`${nameId}-end`} type="date" className="admin-input mt-2" />
+              <input
+                id={`${nameId}-end`}
+                type="date"
+                className="admin-input mt-2"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                required
+              />
             </div>
           </div>
           <div>
             <label className="staff-field-label" htmlFor={`${nameId}-supervisor`}>
               Assigned supervisor
             </label>
-            <select id={`${nameId}-supervisor`} className="admin-select mt-2">
-              {supervisors.map((s) => (
-                <option key={s.lunexId} value={s.lunexId}>
-                  {s.name} ({s.lunexId})
-                </option>
-              ))}
-            </select>
+            {supervisors.length > 0 ? (
+              <select
+                id={`${nameId}-supervisor`}
+                className="admin-select mt-2"
+                value={supervisorId}
+                onChange={(e) => setSupervisorId(e.target.value)}
+              >
+                {supervisors.map((s) => (
+                  <option key={s.lunexId} value={s.lunexId}>
+                    {s.name} ({s.lunexId})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="admin-input mt-2 text-soft-white/40">No staff accounts yet to assign as a supervisor.</p>
+            )}
           </div>
         </>
       )}
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="staff-field-label" htmlFor={`${nameId}-password`}>
-            Password
-          </label>
-          <input
-            id={`${nameId}-password`}
-            type="password"
-            className="admin-input mt-2"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className="staff-field-label" htmlFor={`${nameId}-confirm`}>
-            Confirm password
-          </label>
-          <input
-            id={`${nameId}-confirm`}
-            type="password"
-            className="admin-input mt-2"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </div>
-      </div>
 
       <div>
         <p className="staff-field-label">Account status</p>
@@ -392,9 +402,10 @@ function AccountForm({
       <div className="mt-2 flex items-center gap-6">
         <button
           type="submit"
-          className="task-action text-xs font-semibold tracking-[0.15em] text-soft-white uppercase"
+          disabled={pending}
+          className="task-action text-xs font-semibold tracking-[0.15em] text-soft-white uppercase disabled:opacity-50"
         >
-          {type === "staff" ? "Create staff account" : "Create intern account"}
+          {pending ? "Saving…" : type === "staff" ? "Create staff account" : "Create intern account"}
           <span className="task-action-arrow text-accent" aria-hidden>
             →
           </span>
@@ -402,6 +413,7 @@ function AccountForm({
         <button
           type="button"
           onClick={onCancel}
+          disabled={pending}
           className="profile-edit-toggle text-xs font-medium tracking-[0.15em] uppercase"
         >
           Cancel

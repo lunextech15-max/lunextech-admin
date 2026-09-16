@@ -23,11 +23,13 @@ function loadPeople(): Promise<void> {
 
 export default function PeopleContent({
   initialPeople,
+  loadError = false,
   nextStaffId,
   nextInternId,
   supervisors,
 }: {
   initialPeople: PersonAccount[];
+  loadError?: boolean;
   nextStaffId: string;
   nextInternId: string;
   supervisors: { lunexId: string; name: string }[];
@@ -110,6 +112,12 @@ export default function PeopleContent({
           </span>
         </button>
       </div>
+
+      {loadError && (
+        <p role="alert" className="dash-fade mt-6 border border-line px-5 py-3 text-sm text-accent">
+          Couldn&apos;t load the full roster — the list below may be incomplete. Try refreshing the page.
+        </p>
+      )}
 
       <div className="dash-fade mt-8 flex flex-wrap gap-x-8 gap-y-3" style={{ animationDelay: "0.06s" }}>
         {[
@@ -205,12 +213,15 @@ export default function PeopleContent({
                   .join("")
                   .slice(0, 2)
                   .toUpperCase(),
-                email: "",
+                email: account.email,
                 role: account.role,
-                title: account.role === "staff" ? "Staff Member" : "Intern",
-                department: "—",
+                title: account.title,
+                department: account.department,
                 status: "active",
                 joinedDate: "Just now",
+                supervisorName: account.supervisorName,
+                internshipStart: account.internshipStart,
+                internshipEnd: account.internshipEnd,
               },
               ...prev,
             ]);

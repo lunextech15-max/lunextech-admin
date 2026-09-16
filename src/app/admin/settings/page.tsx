@@ -4,7 +4,7 @@ import ChangePasswordForm from "@/components/admin/settings/ChangePasswordForm";
 import SignOutAllDevices from "@/components/admin/settings/SignOutAllDevices";
 import UpdateProfileForm from "@/components/admin/settings/UpdateProfileForm";
 import { getAdminIdentity } from "@/lib/admin/identity";
-import { getDisciplines } from "@/lib/staff/team-data";
+import { getDepartmentsInUse } from "@/lib/admin/team";
 
 const DEPARTMENTS = ["Product Development", "Design", "Engineering", "Operations", "Management"];
 const STAFF_ROLES = ["Staff Member", "Project Manager", "Developer", "Designer", "Other"];
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default async function AdminSettingsPage() {
   const identity = await getAdminIdentity();
 
-  const disciplines = getDisciplines();
+  const departmentsInUse = await getDepartmentsInUse();
 
   return (
     <AdminLayout active="settings" adminName={identity.name} adminInitials={identity.initials}>
@@ -82,7 +82,9 @@ export default async function AdminSettingsPage() {
             </div>
           </div>
           <p className="mt-3 text-[11px] text-soft-white/35">
-            Disciplines currently in use across the team: {disciplines.join(", ")}.
+            {departmentsInUse.length > 0
+              ? `Departments currently in use across the team: ${departmentsInUse.join(", ")}.`
+              : "No department has been set on a team member yet."}
           </p>
         </section>
 

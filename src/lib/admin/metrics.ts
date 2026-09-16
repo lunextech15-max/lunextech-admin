@@ -1,11 +1,14 @@
 // Computed Command Center metrics — always derived from the underlying
 // project/task/people data, never hardcoded independently.
+//
+// People-derived metrics (team size, active interns) now read the real
+// public.staff roster (see team.ts). Project/task-derived metrics still
+// read MOCK_PROJECTS/MOCK_TASKS — those are a later phase.
 
 import { MOCK_PROJECTS } from "@/lib/staff/projects-data";
 import { MOCK_TASKS } from "@/lib/staff/tasks-data";
-import { MOCK_TEAM } from "@/lib/staff/team-data";
 import { INTERN_TASKS } from "@/lib/intern/mock-data";
-import { ADMIN_INTERNS } from "./people-data";
+import { getAllStaff } from "./team";
 import type { AdminApplication } from "./application-types";
 
 // Anchors "today" to the same date this whole mock dataset's task due-dates
@@ -53,30 +56,36 @@ export function getPendingApplicationsCount(applications: AdminApplication[]): n
   return applications.filter((a) => a.status === "new" || a.status === "under-review").length;
 }
 
-export function getActiveInternCount(): number {
-  return ADMIN_INTERNS.filter((i) => i.status === "active").length;
+export async function getActiveInternCount(): Promise<number> {
+  const { staff } = await getAllStaff();
+  return staff.filter((s) => s.role === "intern" && s.status === "active").length;
 }
 
-export function getTeamMemberCount(): number {
-  return MOCK_TEAM.length;
+export async function getTeamMemberCount(): Promise<number> {
+  const { staff } = await getAllStaff();
+  return staff.filter((s) => s.role === "staff").length;
 }
 
-export function getInternMetrics() {
+export async function getInternMetrics() {
+  const { staff } = await getAllStaff();
+  const interns = staff.filter((s) => s.role === "intern");
   const today = new Date(`${ADMIN_TODAY}T00:00:00`);
-  const active = ADMIN_INTERNS.filter((i) => i.status === "active");
+  const active = interns.filter((i) => i.status === "active");
   const completingSoon = active.filter((i) => {
-    const end = new Date(i.endDate);
+    if (!i.internship_end) return false;
+    const end = new Date(i.internship_end);
     const days = (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
     return days >= 0 && days <= 30;
   }).length;
-  const completed = ADMIN_INTERNS.filter((i) => i.status === "inactive").length;
-  const averageProgress =
-    Math.round(ADMIN_INTERNS.reduce((sum, i) => sum + i.progress, 0) / ADMIN_INTERNS.length) || 0;
+  const completed = interns.filter((i) => i.status === "inactive").length;
+  // Per-intern progress isn't tracked yet — that's derived from real tasks,
+  // a later phase. Honestly 0 rather than inventing a number.
+  const averageProgress = 0;
 
   return { active: active.length, completingSoon, completed, averageProgress };
 }
 
-export function getCompanyPulse() {
+export async function getCompanyPulse() {
   const projectDelivery =
     Math.round(MOCK_PROJECTS.reduce((sum, p) => sum + p.progress, 0) / MOCK_PROJECTS.length) || 0;
 
@@ -85,10 +94,12 @@ export function getCompanyPulse() {
   const taskCompletion = totalTasks > 0 ? Math.round((taskCounts.completed / totalTasks) * 100) : 0;
 
   const activeProjects = getActiveProjectCount();
-  const teamCapacity = Math.min(100, Math.round((activeProjects / MOCK_TEAM.length) * 100 * 1.8));
+  const teamMemberCount = await getTeamMemberCount();
+  const teamCapacity =
+    teamMemberCount > 0 ? Math.min(100, Math.round((activeProjects / teamMemberCount) * 100 * 1.8)) : 0;
 
-  const internProgress =
-    Math.round(ADMIN_INTERNS.reduce((sum, i) => sum + i.progress, 0) / ADMIN_INTERNS.length) || 0;
+  // Per-intern progress isn't tracked yet — see getInternMetrics above.
+  const internProgress = 0;
 
   return { projectDelivery, taskCompletion, teamCapacity, internProgress };
 }

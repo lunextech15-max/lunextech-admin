@@ -3,8 +3,7 @@ import { Suspense } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import PeopleContent from "@/components/admin/people/PeopleContent";
 import { getAdminIdentity } from "@/lib/admin/identity";
-import { getAllPeople, STAFF_LUNEX_IDS, ADMIN_INTERNS } from "@/lib/admin/people-data";
-import { MOCK_TEAM } from "@/lib/staff/team-data";
+import { getAllPeople, getSupervisorOptions, getNextStaffIds } from "@/lib/admin/team";
 
 export const metadata: Metadata = {
   title: "People — LUNEX TECH Admin",
@@ -15,17 +14,21 @@ export const metadata: Metadata = {
 export default async function AdminPeoplePage() {
   const identity = await getAdminIdentity();
 
-  const nextStaffNumber = Object.keys(STAFF_LUNEX_IDS).length + 1;
-  const nextInternNumber = ADMIN_INTERNS.length + 1;
+  const [{ people, error }, supervisors, { nextStaffId, nextInternId }] = await Promise.all([
+    getAllPeople(),
+    getSupervisorOptions(),
+    getNextStaffIds(),
+  ]);
 
   return (
     <AdminLayout active="people" adminName={identity.name} adminInitials={identity.initials}>
       <Suspense fallback={null}>
         <PeopleContent
-          initialPeople={getAllPeople()}
-          nextStaffId={`LX-${String(nextStaffNumber).padStart(3, "0")}`}
-          nextInternId={`IN-${String(nextInternNumber).padStart(3, "0")}`}
-          supervisors={MOCK_TEAM.map((m) => ({ lunexId: STAFF_LUNEX_IDS[m.initials], name: m.name }))}
+          initialPeople={people}
+          loadError={error}
+          nextStaffId={nextStaffId}
+          nextInternId={nextInternId}
+          supervisors={supervisors}
         />
       </Suspense>
     </AdminLayout>

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AdminLayout from "@/components/admin/AdminLayout";
 import InternsTable from "@/components/admin/interns/InternsTable";
+import EmptyState from "@/components/admin/EmptyState";
 import { getAdminIdentity } from "@/lib/admin/identity";
-import { ADMIN_INTERNS, getAllPeople } from "@/lib/admin/people-data";
+import { getAllPeople } from "@/lib/admin/team";
 import { getInternMetrics } from "@/lib/admin/metrics";
 
 export const metadata: Metadata = {
@@ -15,9 +16,8 @@ export const metadata: Metadata = {
 export default async function AdminInternsPage() {
   const identity = await getAdminIdentity();
 
-  const metrics = getInternMetrics();
-  const people = getAllPeople();
-  const supervisorName = (lunexId: string) => people.find((p) => p.lunexId === lunexId)?.name ?? "—";
+  const [metrics, { people }] = await Promise.all([getInternMetrics(), getAllPeople()]);
+  const interns = people.filter((p) => p.role === "intern");
 
   return (
     <AdminLayout active="interns" adminName={identity.name} adminInitials={identity.initials}>
@@ -62,7 +62,22 @@ export default async function AdminInternsPage() {
         </div>
 
         <div className="dash-fade mt-8" style={{ animationDelay: "0.12s" }}>
-          <InternsTable interns={ADMIN_INTERNS} supervisorName={supervisorName} />
+          {interns.length > 0 ? (
+            <InternsTable interns={interns} />
+          ) : (
+            <EmptyState
+              title="No interns yet."
+              description="Create an intern account to start tracking an internship."
+              action={
+                <Link
+                  href="/admin/people?new=1&type=intern"
+                  className="dash-metric-link text-xs font-medium tracking-[0.15em] uppercase"
+                >
+                  + Create intern account
+                </Link>
+              }
+            />
+          )}
         </div>
       </div>
     </AdminLayout>

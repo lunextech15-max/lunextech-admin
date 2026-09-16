@@ -7,9 +7,9 @@
 export type AccountRole = "admin" | "staff" | "intern";
 export type AccountStatus = "active" | "inactive";
 
-// One row per person, unifying staff + intern identities for the People
-// list. Derived from team-data.ts / intern mock data at read time — see
-// people-data.ts — not a separately maintained record.
+// One row per person, unifying admin + staff + intern identities for the
+// People list. Derived from the real public.staff table at read time —
+// see src/lib/admin/team.ts — not a separately maintained record.
 export type PersonAccount = {
   lunexId: string;
   name: string;

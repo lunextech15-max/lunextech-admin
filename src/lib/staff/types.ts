@@ -149,17 +149,8 @@ export type DashboardMetrics = {
   nextDeadline: string;
 };
 
-// Team directory — a canonical roster, separate from the compact
-// `ProjectTeamMember[]` embedded per-project (which exists only to render
-// avatars). `projectIds` reference `StaffProject.code`; resolve the actual
-// project data from `projects-data.ts` rather than duplicating it here.
-export type StaffTeamMember = {
-  id: string;
-  name: string;
-  initials: string;
-  role: string;
-  discipline: string;
-  skills: string[];
-  projectIds: string[];
-  status: "active";
-};
+// The real team roster (public.staff, see src/lib/admin/team.ts) replaced
+// the old mock StaffTeamMember/team-data.ts roster this comment used to
+// describe. `PersonAccount` (src/lib/admin/types.ts) is the shape to use
+// now; `ProjectTeamMember` below is still just the compact per-project
+// embed used to render avatars (Projects phase, unchanged).

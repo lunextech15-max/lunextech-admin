@@ -6,8 +6,7 @@ import AdminProjectRow from "./AdminProjectRow";
 import CreateProjectModal from "./CreateProjectModal";
 import EmptyState from "@/components/admin/EmptyState";
 import type { StaffProject } from "@/lib/staff/types";
-import type { StaffTeamMember } from "@/lib/staff/types";
-import type { AdminIntern } from "@/lib/admin/people-data";
+import type { PersonAccount } from "@/lib/admin/types";
 
 type Filter = "all" | "active" | "completed" | "upcoming" | "on-hold";
 
@@ -37,8 +36,8 @@ export default function ProjectsContent({
   interns,
 }: {
   projects: StaffProject[];
-  staff: StaffTeamMember[];
-  interns: AdminIntern[];
+  staff: PersonAccount[];
+  interns: PersonAccount[];
 }) {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);

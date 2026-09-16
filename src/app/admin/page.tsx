@@ -25,6 +25,11 @@ export const metadata: Metadata = {
 export default async function AdminOverviewPage() {
   const identity = await getAdminIdentity();
   const { applications } = await getAllApplications();
+  const [teamMembers, activeInterns, pulse] = await Promise.all([
+    getTeamMemberCount(),
+    getActiveInternCount(),
+    getCompanyPulse(),
+  ]);
 
   const milestoneProject = MOCK_PROJECTS.find((project) =>
     getProjectMilestones(project.code).some((m) => m.status === "in-progress")
@@ -37,15 +42,15 @@ export default async function AdminOverviewPage() {
     <AdminLayout active="overview" adminName={identity.name} adminInitials={identity.initials}>
       <AdminOverviewContent
         activeProjects={getActiveProjectCount()}
-        teamMembers={getTeamMemberCount()}
-        activeInterns={getActiveInternCount()}
+        teamMembers={teamMembers}
+        activeInterns={activeInterns}
         openTasks={getOpenTaskCount()}
         overdueTasks={getOverdueTasks()}
         pendingApplications={getPendingApplicationsCount(applications)}
         milestoneProjectName={milestoneProject?.name ?? null}
         milestoneTitle={milestone?.title ?? null}
         milestoneSlug={milestoneProject?.slug ?? null}
-        pulse={getCompanyPulse()}
+        pulse={pulse}
         activity={MOCK_ADMIN_ACTIVITY}
       />
     </AdminLayout>
