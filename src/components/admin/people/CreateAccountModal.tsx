@@ -2,7 +2,7 @@
 
 import { useId, useState, type FormEvent } from "react";
 import Modal from "@/components/admin/Modal";
-import { createStaffProfile } from "@/lib/admin/team-client";
+import { createAccount } from "@/lib/admin/create-account";
 import type { AccountRole } from "@/lib/admin/types";
 
 type Step = "type" | "form" | "created";
@@ -61,11 +61,10 @@ export default function CreateAccountModal({
 
   if (step === "created" && created) {
     return (
-      <Modal title="Profile saved." onClose={onClose}>
+      <Modal title="Account created." onClose={onClose}>
         <p className="max-w-sm text-sm leading-relaxed text-soft-white/55">
-          {created.name}&apos;s profile is now in the roster. To let them sign in, create their login in Supabase
-          Dashboard → Authentication → Users with the email below, then they can use this Staff ID to log in — this
-          app has no service-role key, so it can&apos;t create logins itself.
+          {created.name}&apos;s login and profile are both ready. They can sign in now with this Staff ID and the
+          password you set.
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-5 border border-line p-5">
@@ -199,6 +198,8 @@ function AccountForm({
 }) {
   const [name, setName] = useState(initialName);
   const [email, setEmail] = useState(initialEmail);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [staffRole, setStaffRole] = useState(staffRoles[0]);
   const [department, setDepartment] = useState(departments[0]);
   const [internshipRole, setInternshipRole] = useState(internshipRoles[0]);
@@ -210,8 +211,16 @@ function AccountForm({
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!name.trim() || !email.trim()) {
+    if (!name.trim() || !email.trim() || !password) {
       setError("Fill in all required fields.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords don't match.");
       return;
     }
     if (type === "intern" && (!startDate || !endDate)) {
@@ -222,10 +231,11 @@ function AccountForm({
     setError(null);
     setPending(true);
 
-    const { error: createError } = await createStaffProfile({
+    const { error: createError } = await createAccount({
       staffId: lunexId,
       fullName: name.trim(),
       email: email.trim(),
+      password,
       role: type,
       title: type === "staff" ? staffRole : undefined,
       department: type === "staff" ? department : undefined,
@@ -238,8 +248,8 @@ function AccountForm({
     setPending(false);
 
     if (createError) {
-      console.error("CreateAccountModal: createStaffProfile failed", createError);
-      setError(`Couldn't save this profile: ${createError}`);
+      console.error("CreateAccountModal: createAccount failed", createError);
+      setError(`Couldn't create this account: ${createError}`);
       return;
     }
 
@@ -288,6 +298,37 @@ function AccountForm({
           onChange={(e) => setEmail(e.target.value)}
           required
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="staff-field-label" htmlFor={`${nameId}-password`}>
+            Password
+          </label>
+          <input
+            id={`${nameId}-password`}
+            type="password"
+            className="admin-input mt-2"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            minLength={8}
+            required
+          />
+        </div>
+        <div>
+          <label className="staff-field-label" htmlFor={`${nameId}-confirm-password`}>
+            Confirm password
+          </label>
+          <input
+            id={`${nameId}-confirm-password`}
+            type="password"
+            className="admin-input mt-2"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            minLength={8}
+            required
+          />
+        </div>
       </div>
 
       {type === "staff" ? (
