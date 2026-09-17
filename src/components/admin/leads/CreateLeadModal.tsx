@@ -3,6 +3,7 @@
 import { useId, useState, type FormEvent } from "react";
 import Modal from "@/components/admin/Modal";
 import { createLead } from "@/lib/admin/leads-client";
+import { logActivity } from "@/lib/admin/activity-client";
 import type { LeadPriority } from "@/lib/caller/types";
 
 const PRIORITIES: LeadPriority[] = ["high", "medium", "low"];
@@ -64,6 +65,7 @@ export default function CreateLeadModal({
     }
 
     onCreated({ id, name: name.trim() });
+    void logActivity(createdBy, "leads", "Created lead", name.trim());
   };
 
   return (

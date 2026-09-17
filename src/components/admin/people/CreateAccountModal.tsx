@@ -3,6 +3,7 @@
 import { useId, useState, type FormEvent } from "react";
 import Modal from "@/components/admin/Modal";
 import { createAccount } from "@/lib/admin/create-account";
+import { logActivity } from "@/lib/admin/activity-client";
 import type { AccountRole } from "@/lib/admin/types";
 
 type Step = "type" | "form" | "created";
@@ -43,6 +44,7 @@ export default function CreateAccountModal({
   nextInternId,
   nextCallerId,
   supervisors,
+  actorStaffId,
   initialType = "staff",
   initialName = "",
   initialEmail = "",
@@ -53,6 +55,7 @@ export default function CreateAccountModal({
   nextInternId: string;
   nextCallerId: string;
   supervisors: { lunexId: string; name: string }[];
+  actorStaffId: string;
   initialType?: AccountRole;
   initialName?: string;
   initialEmail?: string;
@@ -68,6 +71,7 @@ export default function CreateAccountModal({
     setCreated(account);
     setStep("created");
     onCreated(account);
+    void logActivity(actorStaffId, "people", "Created account", `${account.name} (${account.lunexId})`);
   };
 
   const lunexIdFor = (accountType: AccountRole) => {

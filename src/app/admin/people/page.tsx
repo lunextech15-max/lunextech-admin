@@ -30,6 +30,7 @@ export default async function AdminPeoplePage() {
           nextInternId={nextInternId}
           nextCallerId={nextCallerId}
           supervisors={supervisors}
+          actorStaffId={identity.lunexId}
         />
       </Suspense>
     </AdminLayout>

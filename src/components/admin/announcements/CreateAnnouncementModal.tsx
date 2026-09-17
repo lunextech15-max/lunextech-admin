@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import Modal from "@/components/admin/Modal";
 import { createAnnouncement } from "@/lib/admin/announcements-client";
+import { logActivity } from "@/lib/admin/activity-client";
 import type { AnnouncementAudience } from "@/lib/admin/types";
 
 export type CreatedAnnouncement = { id: string; title: string };
@@ -52,6 +53,7 @@ export default function CreateAnnouncementModal({
     }
 
     onCreated({ id, title: title.trim() });
+    void logActivity(authorStaffId, "announcements", published ? "Published announcement" : "Drafted announcement", title.trim());
   };
 
   return (

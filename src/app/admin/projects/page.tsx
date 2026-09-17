@@ -29,6 +29,7 @@ export default async function AdminProjectsPage() {
           nextProjectCode={nextProjectCode}
           staff={people.filter((p) => p.role === "staff" || p.role === "admin")}
           interns={people.filter((p) => p.role === "intern")}
+          actorStaffId={identity.lunexId}
         />
       </Suspense>
     </AdminLayout>

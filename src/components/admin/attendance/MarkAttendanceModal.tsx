@@ -3,6 +3,7 @@
 import { useId, useState, type FormEvent } from "react";
 import Modal from "@/components/admin/Modal";
 import { markAttendance } from "@/lib/admin/attendance-client";
+import { logActivity } from "@/lib/admin/activity-client";
 import { STATUS_LABEL, type AttendanceRecord, type AttendanceStatus } from "@/lib/admin/attendance-types";
 
 const STATUSES: AttendanceStatus[] = ["present", "late", "half-day", "absent", "leave"];
@@ -60,6 +61,9 @@ export default function MarkAttendanceModal({
       setError(`Couldn't save: ${saveError}`);
       return;
     }
+
+    const personName = people.find((p) => p.id === staffId)?.name ?? staffId;
+    void logActivity(markedBy, "attendance", "Marked attendance", `${personName} — ${STATUS_LABEL[status]}`);
 
     onSaved();
   };

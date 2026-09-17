@@ -25,6 +25,7 @@ export default function PeopleContent({
   nextInternId,
   nextCallerId,
   supervisors,
+  actorStaffId,
 }: {
   initialPeople: PersonAccount[];
   loadError?: boolean;
@@ -32,6 +33,7 @@ export default function PeopleContent({
   nextInternId: string;
   nextCallerId: string;
   supervisors: { lunexId: string; name: string }[];
+  actorStaffId: string;
 }) {
   const searchParams = useSearchParams();
   const [people, setPeople] = useState(initialPeople);
@@ -180,6 +182,7 @@ export default function PeopleContent({
           nextInternId={nextInternId}
           nextCallerId={nextCallerId}
           supervisors={supervisors}
+          actorStaffId={actorStaffId}
           initialType={searchParams.get("type") === "intern" ? "intern" : "staff"}
           initialName={searchParams.get("name") ?? ""}
           initialEmail={searchParams.get("email") ?? ""}

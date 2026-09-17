@@ -22,7 +22,7 @@ export default async function AdminTasksPage() {
   return (
     <AdminLayout active="tasks" adminName={identity.name} adminInitials={identity.initials}>
       <Suspense fallback={null}>
-        <TasksContent tasks={tasks} projects={projects} people={people} />
+        <TasksContent tasks={tasks} projects={projects} people={people} actorStaffId={identity.lunexId} />
       </Suspense>
     </AdminLayout>
   );

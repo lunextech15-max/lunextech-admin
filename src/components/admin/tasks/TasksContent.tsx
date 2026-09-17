@@ -23,10 +23,12 @@ export default function TasksContent({
   tasks,
   projects,
   people,
+  actorStaffId,
 }: {
   tasks: AdminTaskView[];
   projects: StaffProject[];
   people: PersonAccount[];
+  actorStaffId: string;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -187,6 +189,7 @@ export default function TasksContent({
           projects={projects}
           people={people}
           defaultProjectCode={searchParams.get("project") ?? undefined}
+          actorStaffId={actorStaffId}
           onClose={() => setModalOpen(false)}
           onCreated={(task) => {
             setModalOpen(false);

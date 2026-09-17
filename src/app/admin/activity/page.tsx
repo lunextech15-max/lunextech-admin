@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ActivityContent from "@/components/admin/activity/ActivityContent";
 import { getAdminIdentity } from "@/lib/admin/identity";
-import { MOCK_ADMIN_ACTIVITY } from "@/lib/admin/activity-data";
+import { getAllActivity } from "@/lib/admin/activity";
 
 export const metadata: Metadata = {
   title: "Activity — LUNEX TECH Admin",
@@ -11,11 +11,11 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminActivityPage() {
-  const identity = await getAdminIdentity();
+  const [identity, activity] = await Promise.all([getAdminIdentity(), getAllActivity()]);
 
   return (
     <AdminLayout active="activity" adminName={identity.name} adminInitials={identity.initials}>
-      <ActivityContent activity={MOCK_ADMIN_ACTIVITY} />
+      <ActivityContent activity={activity} />
     </AdminLayout>
   );
 }

@@ -3,6 +3,7 @@
 import { useId, useState, type FormEvent } from "react";
 import Modal from "@/components/admin/Modal";
 import { createProject } from "@/lib/admin/projects-client";
+import { logActivity } from "@/lib/admin/activity-client";
 import type { PersonAccount } from "@/lib/admin/types";
 import type { ProjectStatus } from "@/lib/staff/types";
 
@@ -31,12 +32,14 @@ export default function CreateProjectModal({
   nextProjectCode,
   staff,
   interns,
+  actorStaffId,
   onClose,
   onCreated,
 }: {
   nextProjectCode: string;
   staff: PersonAccount[];
   interns: PersonAccount[];
+  actorStaffId: string;
   onClose: () => void;
   onCreated: (project: CreatedProject) => void;
 }) {
@@ -80,6 +83,7 @@ export default function CreateProjectModal({
     }
 
     onCreated({ code: nextProjectCode, name: name.trim() });
+    void logActivity(actorStaffId, "projects", "Created project", name.trim());
   };
 
   return (

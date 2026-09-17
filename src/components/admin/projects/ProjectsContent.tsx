@@ -32,12 +32,14 @@ export default function ProjectsContent({
   nextProjectCode,
   staff,
   interns,
+  actorStaffId,
 }: {
   projects: StaffProject[];
   loadError?: boolean;
   nextProjectCode: string;
   staff: PersonAccount[];
   interns: PersonAccount[];
+  actorStaffId: string;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -176,6 +178,7 @@ export default function ProjectsContent({
           nextProjectCode={nextProjectCode}
           staff={staff}
           interns={interns}
+          actorStaffId={actorStaffId}
           onClose={() => setModalOpen(false)}
           onCreated={(project) => {
             setModalOpen(false);

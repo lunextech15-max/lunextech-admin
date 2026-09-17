@@ -4,7 +4,7 @@ import AdminOverviewContent from "@/components/admin/overview/AdminOverviewConte
 import { getAdminIdentity } from "@/lib/admin/identity";
 import { getAllProjects } from "@/lib/admin/projects";
 import { getProjectMilestones } from "@/lib/admin/milestones-data";
-import { MOCK_ADMIN_ACTIVITY } from "@/lib/admin/activity-data";
+import { getAllActivity } from "@/lib/admin/activity";
 import { getAllApplications } from "@/lib/admin/real-applications";
 import {
   getActiveProjectCount,
@@ -26,13 +26,14 @@ export default async function AdminOverviewPage() {
   const identity = await getAdminIdentity();
   const { applications } = await getAllApplications();
   const { projects } = await getAllProjects();
-  const [teamMembers, activeInterns, activeProjects, pulse, openTasks, overdueTasks] = await Promise.all([
+  const [teamMembers, activeInterns, activeProjects, pulse, openTasks, overdueTasks, activity] = await Promise.all([
     getTeamMemberCount(),
     getActiveInternCount(),
     getActiveProjectCount(),
     getCompanyPulse(),
     getOpenTaskCount(),
     getOverdueTasks(),
+    getAllActivity(6),
   ]);
 
   const milestoneProject = projects.find((project) =>
@@ -55,7 +56,7 @@ export default async function AdminOverviewPage() {
         milestoneTitle={milestone?.title ?? null}
         milestoneSlug={milestoneProject?.slug ?? null}
         pulse={pulse}
-        activity={MOCK_ADMIN_ACTIVITY}
+        activity={activity}
       />
     </AdminLayout>
   );

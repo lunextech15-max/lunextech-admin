@@ -11,6 +11,7 @@ import TaskAssignee from "./TaskAssignee";
 import TaskComments from "./TaskComments";
 import ProjectActivityTimeline from "@/components/staff/projects/ProjectActivityTimeline";
 import { toggleChecklistItem, updateTaskStatus, addTaskComment } from "@/lib/admin/tasks-client";
+import { logActivity } from "@/lib/admin/activity-client";
 import type { Task, TaskStatus } from "@/lib/staff/types";
 
 export default function TaskWorkspace({
@@ -44,6 +45,7 @@ export default function TaskWorkspace({
       setStatus(previous);
       setError(`Couldn't update status: ${statusError}`);
     } else {
+      void logActivity(viewer.staffId, "tasks", "Updated task status", `${task.title} → ${next}`);
       router.refresh();
     }
   };

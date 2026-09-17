@@ -9,6 +9,7 @@ import ProjectTeam from "@/components/staff/projects/ProjectTeam";
 import ProjectActivityTimeline from "@/components/staff/projects/ProjectActivityTimeline";
 import AdminMilestones from "./AdminMilestones";
 import { updateProjectStatus } from "@/lib/admin/projects-client";
+import { logActivity } from "@/lib/admin/activity-client";
 import type { ProjectMilestone } from "@/lib/admin/types";
 import type { StaffProject, ProjectStatus, Task } from "@/lib/staff/types";
 
@@ -34,10 +35,12 @@ export default function AdminProjectWorkspace({
   project,
   milestones,
   tasks,
+  actorStaffId,
 }: {
   project: StaffProject;
   milestones: ProjectMilestone[];
   tasks: Task[];
+  actorStaffId: string;
 }) {
   const router = useRouter();
   const [section, setSection] = useState<Section>("overview");
@@ -53,6 +56,7 @@ export default function AdminProjectWorkspace({
       setStatus(previous);
       setStatusError(error);
     } else {
+      void logActivity(actorStaffId, "projects", "Changed project status", `${project.name} → ${next}`);
       router.refresh();
     }
   };

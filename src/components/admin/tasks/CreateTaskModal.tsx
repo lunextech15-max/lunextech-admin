@@ -3,6 +3,7 @@
 import { useId, useState, type FormEvent } from "react";
 import Modal from "@/components/admin/Modal";
 import { createTask } from "@/lib/admin/tasks-client";
+import { logActivity } from "@/lib/admin/activity-client";
 import type { PersonAccount } from "@/lib/admin/types";
 import type { StaffProject, TaskPriority } from "@/lib/staff/types";
 
@@ -14,12 +15,14 @@ export default function CreateTaskModal({
   projects,
   people,
   defaultProjectCode,
+  actorStaffId,
   onClose,
   onCreated,
 }: {
   projects: StaffProject[];
   people: PersonAccount[];
   defaultProjectCode?: string;
+  actorStaffId: string;
   onClose: () => void;
   onCreated: (task: CreatedTask) => void;
 }) {
@@ -61,6 +64,7 @@ export default function CreateTaskModal({
     }
 
     onCreated({ id, title: title.trim() });
+    void logActivity(actorStaffId, "tasks", "Created task", title.trim());
   };
 
   return (

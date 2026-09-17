@@ -60,7 +60,12 @@ export default async function AdminProjectDetailPage({ params }: PageProps<"/adm
           </div>
         </div>
 
-        <AdminProjectWorkspace project={project} milestones={getProjectMilestones(project.code)} tasks={tasks} />
+        <AdminProjectWorkspace
+          project={project}
+          milestones={getProjectMilestones(project.code)}
+          tasks={tasks}
+          actorStaffId={identity.lunexId}
+        />
       </div>
     </AdminLayout>
   );
