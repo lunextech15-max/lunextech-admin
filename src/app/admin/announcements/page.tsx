@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import AnnouncementsContent from "@/components/admin/announcements/AnnouncementsContent";
 import { getAdminIdentity } from "@/lib/admin/identity";
-import { MOCK_ANNOUNCEMENTS } from "@/lib/staff/announcements-data";
+import { getAllAnnouncements } from "@/lib/admin/announcements";
 
 export const metadata: Metadata = {
   title: "Announcements — LUNEX TECH Admin",
@@ -12,12 +12,12 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminAnnouncementsPage() {
-  const identity = await getAdminIdentity();
+  const [identity, announcements] = await Promise.all([getAdminIdentity(), getAllAnnouncements()]);
 
   return (
     <AdminLayout active="announcements" adminName={identity.name} adminInitials={identity.initials}>
       <Suspense fallback={null}>
-        <AnnouncementsContent base={MOCK_ANNOUNCEMENTS} />
+        <AnnouncementsContent announcements={announcements} authorStaffId={identity.lunexId} />
       </Suspense>
     </AdminLayout>
   );

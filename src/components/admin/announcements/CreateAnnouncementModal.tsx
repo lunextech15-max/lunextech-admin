@@ -2,22 +2,19 @@
 
 import { useId, useState } from "react";
 import Modal from "@/components/admin/Modal";
+import { createAnnouncement } from "@/lib/admin/announcements-client";
 import type { AnnouncementAudience } from "@/lib/admin/types";
 
-export type NewAnnouncement = {
-  title: string;
-  message: string;
-  audience: AnnouncementAudience;
-  important: boolean;
-  published: boolean;
-};
+export type CreatedAnnouncement = { id: string; title: string };
 
 export default function CreateAnnouncementModal({
+  authorStaffId,
   onClose,
-  onCreate,
+  onCreated,
 }: {
+  authorStaffId: string;
   onClose: () => void;
-  onCreate: (announcement: NewAnnouncement) => void;
+  onCreated: (announcement: CreatedAnnouncement) => void;
 }) {
   const titleId = useId();
   const [title, setTitle] = useState("");
@@ -25,14 +22,36 @@ export default function CreateAnnouncementModal({
   const [audience, setAudience] = useState<AnnouncementAudience>("everyone");
   const [important, setImportant] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
-  const submit = (published: boolean) => (event: { preventDefault: () => void }) => {
+  const submit = (published: boolean) => async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     if (!title.trim() || !message.trim()) {
       setError("Title and message are required.");
       return;
     }
-    onCreate({ title: title.trim(), message: message.trim(), audience, important, published });
+
+    setError(null);
+    setPending(true);
+
+    const { error: createError, id } = await createAnnouncement({
+      title: title.trim(),
+      content: message.trim(),
+      category: "general",
+      priority: important ? "important" : "normal",
+      audience,
+      published,
+      authorStaffId,
+    });
+
+    setPending(false);
+
+    if (createError || !id) {
+      setError(`Couldn't save: ${createError}`);
+      return;
+    }
+
+    onCreated({ id, title: title.trim() });
   };
 
   return (
@@ -103,29 +122,37 @@ export default function CreateAnnouncementModal({
           </div>
         </div>
 
-        <div>
-          <label className="staff-field-label" htmlFor={`${titleId}-date`}>
-            Publish date
-          </label>
-          <input id={`${titleId}-date`} type="date" className="admin-input mt-2" />
-        </div>
-
-        {error && <p className="staff-error">{error}</p>}
+        {error && (
+          <p role="alert" className="staff-error">
+            {error}
+          </p>
+        )}
 
         <div className="mt-2 flex items-center gap-6">
           <button
             type="submit"
-            className="task-action text-xs font-semibold tracking-[0.15em] text-soft-white uppercase"
+            disabled={pending}
+            className="task-action text-xs font-semibold tracking-[0.15em] text-soft-white uppercase disabled:opacity-50"
           >
-            Publish
+            {pending ? "Publishing…" : "Publish"}
             <span className="task-action-arrow text-accent" aria-hidden>
               →
             </span>
           </button>
-          <button type="button" onClick={submit(false)} className="profile-edit-toggle text-xs font-medium tracking-[0.15em] uppercase">
+          <button
+            type="button"
+            onClick={submit(false)}
+            disabled={pending}
+            className="profile-edit-toggle text-xs font-medium tracking-[0.15em] uppercase"
+          >
             Save draft
           </button>
-          <button type="button" onClick={onClose} className="profile-edit-toggle text-xs font-medium tracking-[0.15em] uppercase">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={pending}
+            className="profile-edit-toggle text-xs font-medium tracking-[0.15em] uppercase"
+          >
             Cancel
           </button>
         </div>
