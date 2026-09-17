@@ -144,7 +144,14 @@ export default function AdminProjectWorkspace({
             </div>
           </div>
         )}
-        {section === "milestones" && <AdminMilestones initial={milestones} />}
+        {section === "milestones" && (
+          <AdminMilestones
+            initial={milestones}
+            projectCode={project.code}
+            projectName={project.name}
+            actorStaffId={actorStaffId}
+          />
+        )}
         {section === "activity" && <ProjectActivityTimeline activity={project.activity} title="Project activity" />}
       </div>
     </div>

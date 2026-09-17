@@ -3,7 +3,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import AdminOverviewContent from "@/components/admin/overview/AdminOverviewContent";
 import { getAdminIdentity } from "@/lib/admin/identity";
 import { getAllProjects } from "@/lib/admin/projects";
-import { getProjectMilestones } from "@/lib/admin/milestones-data";
+import { getProjectMilestones } from "@/lib/admin/milestones";
 import { getAllActivity } from "@/lib/admin/activity";
 import { getAllApplications } from "@/lib/admin/real-applications";
 import {
@@ -36,12 +36,14 @@ export default async function AdminOverviewPage() {
     getAllActivity(6),
   ]);
 
-  const milestoneProject = projects.find((project) =>
-    getProjectMilestones(project.code).some((m) => m.status === "in-progress")
+  const milestonesByProject = await Promise.all(
+    projects.map(async (project) => ({ project, milestones: await getProjectMilestones(project.code) }))
   );
-  const milestone = milestoneProject
-    ? getProjectMilestones(milestoneProject.code).find((m) => m.status === "in-progress")
-    : undefined;
+  const inProgressEntry = milestonesByProject.find(({ milestones }) =>
+    milestones.some((m) => m.status === "in-progress")
+  );
+  const milestoneProject = inProgressEntry?.project;
+  const milestone = inProgressEntry?.milestones.find((m) => m.status === "in-progress");
 
   return (
     <AdminLayout active="overview" adminName={identity.name} adminInitials={identity.initials}>

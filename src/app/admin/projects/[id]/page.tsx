@@ -6,7 +6,7 @@ import ProgressIndicator from "@/components/staff/dashboard/ProgressIndicator";
 import AdminProjectWorkspace from "@/components/admin/projects/AdminProjectWorkspace";
 import { getAdminIdentity } from "@/lib/admin/identity";
 import { getProject } from "@/lib/admin/projects";
-import { getProjectMilestones } from "@/lib/admin/milestones-data";
+import { getProjectMilestones } from "@/lib/admin/milestones";
 import { getTasksForProject } from "@/lib/admin/tasks";
 
 export async function generateMetadata({ params }: PageProps<"/admin/projects/[id]">): Promise<Metadata> {
@@ -32,7 +32,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps<"/adm
   const { id } = await params;
   const project = await getProject(id);
   if (!project) notFound();
-  const tasks = await getTasksForProject(project.code);
+  const [tasks, milestones] = await Promise.all([getTasksForProject(project.code), getProjectMilestones(project.code)]);
 
   return (
     <AdminLayout active="projects" adminName={identity.name} adminInitials={identity.initials}>
@@ -62,7 +62,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps<"/adm
 
         <AdminProjectWorkspace
           project={project}
-          milestones={getProjectMilestones(project.code)}
+          milestones={milestones}
           tasks={tasks}
           actorStaffId={identity.lunexId}
         />
