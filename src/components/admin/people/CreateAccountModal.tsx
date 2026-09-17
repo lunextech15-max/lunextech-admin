@@ -17,6 +17,8 @@ export type CreatedAccount = {
   supervisorName?: string;
   internshipStart?: string;
   internshipEnd?: string;
+  territory?: string;
+  dailyCallTarget?: number;
 };
 
 const STAFF_ROLES = ["Staff Member", "Project Manager", "Developer", "Designer", "Other"];
@@ -29,9 +31,17 @@ const INTERNSHIP_ROLES = [
   "Product Development",
 ];
 
+const TYPE_TITLE: Record<AccountRole, string> = {
+  admin: "Create account.",
+  staff: "Create account.",
+  intern: "Create intern account.",
+  caller: "Create caller account.",
+};
+
 export default function CreateAccountModal({
   nextStaffId,
   nextInternId,
+  nextCallerId,
   supervisors,
   initialType = "staff",
   initialName = "",
@@ -41,6 +51,7 @@ export default function CreateAccountModal({
 }: {
   nextStaffId: string;
   nextInternId: string;
+  nextCallerId: string;
   supervisors: { lunexId: string; name: string }[];
   initialType?: AccountRole;
   initialName?: string;
@@ -57,6 +68,12 @@ export default function CreateAccountModal({
     setCreated(account);
     setStep("created");
     onCreated(account);
+  };
+
+  const lunexIdFor = (accountType: AccountRole) => {
+    if (accountType === "intern") return nextInternId;
+    if (accountType === "caller") return nextCallerId;
+    return nextStaffId;
   };
 
   if (step === "created" && created) {
@@ -104,11 +121,11 @@ export default function CreateAccountModal({
 
   if (step === "form") {
     return (
-      <Modal title={type === "staff" ? "Create account." : "Create intern account."} onClose={onClose}>
+      <Modal title={TYPE_TITLE[type]} onClose={onClose}>
         <AccountForm
           type={type}
           nameId={nameId}
-          lunexId={type === "staff" ? nextStaffId : nextInternId}
+          lunexId={lunexIdFor(type)}
           supervisors={supervisors}
           staffRoles={STAFF_ROLES}
           departments={DEPARTMENTS}
@@ -127,7 +144,7 @@ export default function CreateAccountModal({
       <p id="account-type-label" className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">
         Account type
       </p>
-      <div role="radiogroup" aria-labelledby="account-type-label" className="mt-3 flex gap-3">
+      <div role="radiogroup" aria-labelledby="account-type-label" className="mt-3 flex flex-wrap gap-3">
         <button
           type="button"
           role="radio"
@@ -145,6 +162,15 @@ export default function CreateAccountModal({
           className={`admin-type-option ${type === "intern" ? "is-active" : ""}`}
         >
           Intern
+        </button>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={type === "caller"}
+          onClick={() => setType("caller")}
+          className={`admin-type-option ${type === "caller" ? "is-active" : ""}`}
+        >
+          Cold Caller
         </button>
       </div>
 
@@ -206,6 +232,8 @@ function AccountForm({
   const [supervisorId, setSupervisorId] = useState(supervisors[0]?.lunexId ?? "");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [territory, setTerritory] = useState("");
+  const [dailyCallTarget, setDailyCallTarget] = useState(50);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -243,6 +271,8 @@ function AccountForm({
       supervisorStaffId: type === "intern" ? supervisorId || undefined : undefined,
       internshipStart: type === "intern" ? startDate : undefined,
       internshipEnd: type === "intern" ? endDate : undefined,
+      territory: type === "caller" ? territory : undefined,
+      dailyCallTarget: type === "caller" ? dailyCallTarget : undefined,
     });
 
     setPending(false);
@@ -258,11 +288,13 @@ function AccountForm({
       name: name.trim(),
       email: email.trim(),
       role: type,
-      title: type === "staff" ? staffRole : `${internshipRole} Intern`,
-      department: type === "staff" ? department : internshipRole,
+      title: type === "staff" ? staffRole : type === "intern" ? `${internshipRole} Intern` : "Cold Caller",
+      department: type === "staff" ? department : type === "intern" ? internshipRole : territory,
       supervisorName: type === "intern" ? supervisors.find((s) => s.lunexId === supervisorId)?.name : undefined,
       internshipStart: type === "intern" ? startDate : undefined,
       internshipEnd: type === "intern" ? endDate : undefined,
+      territory: type === "caller" ? territory : undefined,
+      dailyCallTarget: type === "caller" ? dailyCallTarget : undefined,
     });
   };
 
@@ -331,7 +363,7 @@ function AccountForm({
         </div>
       </div>
 
-      {type === "staff" ? (
+      {type === "staff" && (
         <>
           <div>
             <label className="staff-field-label" htmlFor={`${nameId}-role`}>
@@ -364,7 +396,9 @@ function AccountForm({
             </select>
           </div>
         </>
-      ) : (
+      )}
+
+      {type === "intern" && (
         <>
           <div>
             <label className="staff-field-label" htmlFor={`${nameId}-role`}>
@@ -433,6 +467,36 @@ function AccountForm({
         </>
       )}
 
+      {type === "caller" && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="staff-field-label" htmlFor={`${nameId}-territory`}>
+              Territory / team
+            </label>
+            <input
+              id={`${nameId}-territory`}
+              className="admin-input mt-2"
+              value={territory}
+              onChange={(e) => setTerritory(e.target.value)}
+              placeholder="e.g. North region"
+            />
+          </div>
+          <div>
+            <label className="staff-field-label" htmlFor={`${nameId}-target`}>
+              Daily call target
+            </label>
+            <input
+              id={`${nameId}-target`}
+              type="number"
+              min={0}
+              className="admin-input mt-2"
+              value={dailyCallTarget}
+              onChange={(e) => setDailyCallTarget(Number(e.target.value))}
+            />
+          </div>
+        </div>
+      )}
+
       <div>
         <p className="staff-field-label">Account status</p>
         <span className="dash-status dash-status--completed mt-2">Active</span>
@@ -446,7 +510,7 @@ function AccountForm({
           disabled={pending}
           className="task-action text-xs font-semibold tracking-[0.15em] text-soft-white uppercase disabled:opacity-50"
         >
-          {pending ? "Saving…" : type === "staff" ? "Create staff account" : "Create intern account"}
+          {pending ? "Saving…" : "Create account"}
           <span className="task-action-arrow text-accent" aria-hidden>
             →
           </span>

@@ -20,6 +20,8 @@ export type StaffRow = {
   supervisor_staff_id: string | null;
   internship_start: string | null;
   internship_end: string | null;
+  territory: string | null;
+  daily_call_target: number | null;
   created_at: string;
 };
 
@@ -46,6 +48,7 @@ function formatJoined(createdAt: string): string {
 function defaultTitle(row: StaffRow): string {
   if (row.title) return row.title;
   if (row.role === "intern") return row.internship_role ? `${row.internship_role} Intern` : "Intern";
+  if (row.role === "caller") return "Cold Caller";
   if (row.role === "admin") return "Administrator";
   return "Staff Member";
 }
@@ -65,6 +68,8 @@ function toPersonAccount(row: StaffRow, nameByStaffId: Map<string, string>): Per
     supervisorName: row.supervisor_staff_id ? nameByStaffId.get(row.supervisor_staff_id) : undefined,
     internshipStart: row.internship_start ?? undefined,
     internshipEnd: row.internship_end ?? undefined,
+    territory: row.territory ?? undefined,
+    dailyCallTarget: row.daily_call_target ?? undefined,
   };
 }
 
@@ -121,15 +126,22 @@ export async function getSupervisorOptions(): Promise<{ lunexId: string; name: s
 }
 
 /** Next Lunex ID to suggest in the Create Account form, derived from how
- * many staff/admin (LX-xxx) vs intern (IN-xxx) rows already exist. Purely
- * a UI suggestion — the id itself is what actually gets inserted. */
-export async function getNextStaffIds(): Promise<{ nextStaffId: string; nextInternId: string }> {
+ * many staff/admin (LX-xxx), intern (IN-xxx), and caller (CC-xxx) rows
+ * already exist. Purely a UI suggestion — the id itself is what actually
+ * gets inserted. */
+export async function getNextStaffIds(): Promise<{
+  nextStaffId: string;
+  nextInternId: string;
+  nextCallerId: string;
+}> {
   const { staff } = await getAllStaff();
-  const staffCount = staff.filter((s) => s.role !== "intern").length;
+  const staffCount = staff.filter((s) => s.role !== "intern" && s.role !== "caller").length;
   const internCount = staff.filter((s) => s.role === "intern").length;
+  const callerCount = staff.filter((s) => s.role === "caller").length;
   return {
     nextStaffId: `LX-${String(staffCount + 1).padStart(3, "0")}`,
     nextInternId: `IN-${String(internCount + 1).padStart(3, "0")}`,
+    nextCallerId: `CC-${String(callerCount + 1).padStart(3, "0")}`,
   };
 }
 

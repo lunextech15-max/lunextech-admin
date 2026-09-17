@@ -27,6 +27,8 @@ export type CreateAccountInput = {
   supervisorStaffId?: string;
   internshipStart?: string;
   internshipEnd?: string;
+  territory?: string;
+  dailyCallTarget?: number;
 };
 
 export async function createAccount(input: CreateAccountInput): Promise<{ error: string | null }> {
@@ -63,6 +65,8 @@ export async function createAccount(input: CreateAccountInput): Promise<{ error:
     supervisor_staff_id: input.supervisorStaffId || null,
     internship_start: input.internshipStart || null,
     internship_end: input.internshipEnd || null,
+    territory: input.territory || null,
+    daily_call_target: input.dailyCallTarget || null,
   });
 
   if (profileError) {

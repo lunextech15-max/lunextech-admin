@@ -7,12 +7,13 @@ import CreateAccountModal from "./CreateAccountModal";
 import EmptyState from "@/components/admin/EmptyState";
 import type { PersonAccount } from "@/lib/admin/types";
 
-type Filter = "all" | "staff" | "intern" | "active" | "inactive";
+type Filter = "all" | "staff" | "intern" | "caller" | "active" | "inactive";
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "All" },
   { id: "staff", label: "Staff" },
   { id: "intern", label: "Interns" },
+  { id: "caller", label: "Callers" },
   { id: "active", label: "Active" },
   { id: "inactive", label: "Inactive" },
 ];
@@ -22,12 +23,14 @@ export default function PeopleContent({
   loadError = false,
   nextStaffId,
   nextInternId,
+  nextCallerId,
   supervisors,
 }: {
   initialPeople: PersonAccount[];
   loadError?: boolean;
   nextStaffId: string;
   nextInternId: string;
+  nextCallerId: string;
   supervisors: { lunexId: string; name: string }[];
 }) {
   const searchParams = useSearchParams();
@@ -39,6 +42,7 @@ export default function PeopleContent({
   const total = people.length;
   const staffCount = people.filter((p) => p.role === "staff").length;
   const internCount = people.filter((p) => p.role === "intern").length;
+  const callerCount = people.filter((p) => p.role === "caller").length;
   const activeCount = people.filter((p) => p.status === "active").length;
   const inactiveCount = people.filter((p) => p.status === "inactive").length;
 
@@ -48,6 +52,7 @@ export default function PeopleContent({
       .filter((p) => {
         if (filter === "staff") return p.role === "staff";
         if (filter === "intern") return p.role === "intern";
+        if (filter === "caller") return p.role === "caller";
         if (filter === "active") return p.status === "active";
         if (filter === "inactive") return p.status === "inactive";
         return true;
@@ -99,6 +104,7 @@ export default function PeopleContent({
           { label: "Total people", value: total },
           { label: "Staff", value: staffCount },
           { label: "Interns", value: internCount },
+          { label: "Callers", value: callerCount },
           { label: "Active", value: activeCount },
           { label: "Inactive", value: inactiveCount },
         ].map((item) => (
@@ -172,6 +178,7 @@ export default function PeopleContent({
         <CreateAccountModal
           nextStaffId={nextStaffId}
           nextInternId={nextInternId}
+          nextCallerId={nextCallerId}
           supervisors={supervisors}
           initialType={searchParams.get("type") === "intern" ? "intern" : "staff"}
           initialName={searchParams.get("name") ?? ""}
@@ -197,6 +204,8 @@ export default function PeopleContent({
                 supervisorName: account.supervisorName,
                 internshipStart: account.internshipStart,
                 internshipEnd: account.internshipEnd,
+                territory: account.territory,
+                dailyCallTarget: account.dailyCallTarget,
               },
               ...prev,
             ]);

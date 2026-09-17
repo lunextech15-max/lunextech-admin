@@ -4,12 +4,12 @@
 // genuinely new concepts (accounts roster, applications, milestones,
 // cross-portal activity) get new data here.
 
-export type AccountRole = "admin" | "staff" | "intern";
+export type AccountRole = "admin" | "staff" | "intern" | "caller";
 export type AccountStatus = "active" | "inactive";
 
-// One row per person, unifying admin + staff + intern identities for the
-// People list. Derived from the real public.staff table at read time —
-// see src/lib/admin/team.ts — not a separately maintained record.
+// One row per person, unifying admin + staff + intern + caller identities
+// for the People list. Derived from the real public.staff table at read
+// time — see src/lib/admin/team.ts — not a separately maintained record.
 export type PersonAccount = {
   lunexId: string;
   name: string;
@@ -23,6 +23,8 @@ export type PersonAccount = {
   supervisorName?: string;
   internshipStart?: string;
   internshipEnd?: string;
+  territory?: string;
+  dailyCallTarget?: number;
 };
 
 export type MilestoneStatus = "completed" | "in-progress" | "upcoming";

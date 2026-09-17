@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function AdminPeoplePage() {
   const identity = await getAdminIdentity();
 
-  const [{ people, error }, supervisors, { nextStaffId, nextInternId }] = await Promise.all([
+  const [{ people, error }, supervisors, { nextStaffId, nextInternId, nextCallerId }] = await Promise.all([
     getAllPeople(),
     getSupervisorOptions(),
     getNextStaffIds(),
@@ -28,6 +28,7 @@ export default async function AdminPeoplePage() {
           loadError={error}
           nextStaffId={nextStaffId}
           nextInternId={nextInternId}
+          nextCallerId={nextCallerId}
           supervisors={supervisors}
         />
       </Suspense>
