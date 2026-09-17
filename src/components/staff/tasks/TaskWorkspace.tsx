@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import TaskMetadataBar from "./TaskMetadataBar";
 import TaskOverview from "./TaskOverview";
 import TaskChecklist from "./TaskChecklist";
@@ -9,56 +10,61 @@ import TaskDetailsPanel from "./TaskDetailsPanel";
 import TaskAssignee from "./TaskAssignee";
 import TaskComments from "./TaskComments";
 import ProjectActivityTimeline from "@/components/staff/projects/ProjectActivityTimeline";
+import { toggleChecklistItem, updateTaskStatus, addTaskComment } from "@/lib/admin/tasks-client";
 import type { Task, TaskStatus } from "@/lib/staff/types";
 
-const STATUS_LABEL: Record<TaskStatus, string> = {
-  todo: "To do",
-  "in-progress": "In progress",
-  "in-review": "In review",
-  completed: "Completed",
-};
-
-// Everything below is prototype-local state, seeded from the unified task
-// data source (tasks-data.ts) on load. There is no backend yet, so status
-// changes, checklist toggles and comments live only in this component and
-// reset on refresh — they are never claimed to be permanently saved.
-export default function TaskWorkspace({ task }: { task: Task }) {
+export default function TaskWorkspace({
+  task,
+  viewer,
+}: {
+  task: Task;
+  viewer: { staffId: string; name: string };
+}) {
+  const router = useRouter();
   const [status, setStatus] = useState<TaskStatus>(task.status);
   const [checklist, setChecklist] = useState(task.checklist);
-  const [activity, setActivity] = useState(task.activity);
-  const [comments, setComments] = useState(task.comments);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleToggleChecklistItem = (id: string) => {
-    setChecklist((items) => items.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item)));
+  const handleToggleChecklistItem = async (id: string) => {
+    const item = checklist.find((i) => i.id === id);
+    if (!item) return;
+    setChecklist((items) => items.map((i) => (i.id === id ? { ...i, completed: !i.completed } : i)));
+    const { error: toggleError } = await toggleChecklistItem(id, !item.completed);
+    if (toggleError) {
+      setChecklist((items) => items.map((i) => (i.id === id ? { ...i, completed: item.completed } : i)));
+      setError(`Couldn't update checklist: ${toggleError}`);
+    }
   };
 
-  const handleAdvanceStatus = (next: TaskStatus) => {
-    setActivity((entries) => [
-      ...entries,
-      {
-        id: `local-${entries.length + 1}`,
-        title: "Status updated",
-        description: `${STATUS_LABEL[status]} → ${STATUS_LABEL[next]}`,
-        relativeTime: "Just now",
-      },
-    ]);
+  const handleAdvanceStatus = async (next: TaskStatus) => {
+    const previous = status;
     setStatus(next);
+    const { error: statusError } = await updateTaskStatus(task.id, next);
+    if (statusError) {
+      setStatus(previous);
+      setError(`Couldn't update status: ${statusError}`);
+    } else {
+      router.refresh();
+    }
   };
 
-  const handleAddComment = (body: string) => {
-    setComments((prev) => [
-      ...prev,
-      {
-        id: `local-comment-${prev.length + 1}`,
-        author: task.assigneeName,
-        body,
-        relativeTime: "Just now",
-      },
-    ]);
+  const handleAddComment = async (body: string) => {
+    const { error: commentError } = await addTaskComment(task.id, viewer.staffId, body);
+    if (commentError) {
+      setError(`Couldn't post comment: ${commentError}`);
+      return;
+    }
+    router.refresh();
   };
 
   return (
     <div>
+      {error && (
+        <p role="alert" className="mb-6 border border-line px-5 py-3 text-sm text-accent">
+          {error}
+        </p>
+      )}
+
       <div className="task-section">
         <TaskMetadataBar status={status} priority={task.priority} dueDate={task.dueDate} />
       </div>
@@ -85,11 +91,11 @@ export default function TaskWorkspace({ task }: { task: Task }) {
         </div>
 
         <div className="task-section order-6 lg:order-6 lg:col-start-2" style={{ animationDelay: "0.24s" }}>
-          <ProjectActivityTimeline activity={activity} title="03 / Activity" />
+          <ProjectActivityTimeline activity={task.activity} title="03 / Activity" />
         </div>
 
         <div className="task-section order-7 lg:order-7 lg:col-start-1" style={{ animationDelay: "0.3s" }}>
-          <TaskComments comments={comments} onAddComment={handleAddComment} />
+          <TaskComments comments={task.comments} onAddComment={handleAddComment} />
         </div>
       </div>
     </div>

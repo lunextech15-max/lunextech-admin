@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import AdminTaskRow from "./AdminTaskRow";
 import CreateTaskModal from "./CreateTaskModal";
 import EmptyState from "@/components/admin/EmptyState";
@@ -19,10 +19,6 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "completed", label: "Completed" },
 ];
 
-function loadTasks(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 450));
-}
-
 export default function TasksContent({
   tasks,
   projects,
@@ -32,23 +28,13 @@ export default function TasksContent({
   projects: StaffProject[];
   people: PersonAccount[];
 }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<Filter>("all");
   const [projectFilter, setProjectFilter] = useState("all");
   const [modalOpen, setModalOpen] = useState(() => searchParams.get("new") === "1");
   const [createdMessage, setCreatedMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    loadTasks().then(() => {
-      if (!cancelled) setLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const projectNames = useMemo(() => Array.from(new Set(tasks.map((t) => t.project))), [tasks]);
 
@@ -73,16 +59,6 @@ export default function TasksContent({
       );
   }, [tasks, query, statusFilter, projectFilter]);
 
-  if (loading) {
-    return (
-      <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
-        <div className="dash-skeleton h-4 w-32" />
-        <div className="dash-skeleton mt-4 h-10 w-56" />
-        <div className="dash-skeleton mt-8 h-10 w-full" />
-        <div className="dash-skeleton mt-6 h-40" />
-      </div>
-    );
-  }
 
   return (
     <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
@@ -212,9 +188,10 @@ export default function TasksContent({
           people={people}
           defaultProjectCode={searchParams.get("project") ?? undefined}
           onClose={() => setModalOpen(false)}
-          onCreate={(title) => {
+          onCreated={(task) => {
             setModalOpen(false);
-            setCreatedMessage(`"${title}" was created locally for this session — it isn't saved yet.`);
+            setCreatedMessage(`"${task.title}" was created.`);
+            router.refresh();
           }}
         />
       )}

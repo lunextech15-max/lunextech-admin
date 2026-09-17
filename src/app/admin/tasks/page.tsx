@@ -17,11 +17,12 @@ export default async function AdminTasksPage() {
   const identity = await getAdminIdentity();
   const { people } = await getAllPeople();
   const { projects } = await getAllProjects();
+  const tasks = await getAllAdminTasks();
 
   return (
     <AdminLayout active="tasks" adminName={identity.name} adminInitials={identity.initials}>
       <Suspense fallback={null}>
-        <TasksContent tasks={getAllAdminTasks()} projects={projects} people={people} />
+        <TasksContent tasks={tasks} projects={projects} people={people} />
       </Suspense>
     </AdminLayout>
   );

@@ -1,8 +1,9 @@
-// Unifies the Staff task pool (tasks-data.ts) and the Intern task pool
-// (intern/mock-data.ts) into one shape for the Admin Tasks list — a
-// read-time projection, not a third copy of task data.
+// Unifies the real Staff task pool (tasks.ts, public.tasks) and the
+// still-mock Intern task pool (intern/mock-data.ts — a separate, later
+// phase) into one shape for the Admin Tasks list — a read-time projection,
+// not a third copy of task data.
 
-import { MOCK_TASKS } from "@/lib/staff/tasks-data";
+import { getAllRealTasks } from "./tasks";
 import { INTERN_TASKS, INTERN_USER } from "@/lib/intern/mock-data";
 import type { TaskPriority, TaskStatus } from "@/lib/staff/types";
 
@@ -17,8 +18,9 @@ export type AdminTaskView = {
   source: "staff" | "intern";
 };
 
-export function getAllAdminTasks(): AdminTaskView[] {
-  const staffTasks: AdminTaskView[] = MOCK_TASKS.map((t) => ({
+export async function getAllAdminTasks(): Promise<AdminTaskView[]> {
+  const realTasks = await getAllRealTasks();
+  const staffTasks: AdminTaskView[] = realTasks.map((t) => ({
     id: t.id,
     title: t.title,
     project: t.projectName,
@@ -41,8 +43,4 @@ export function getAllAdminTasks(): AdminTaskView[] {
   }));
 
   return [...staffTasks, ...internTasks];
-}
-
-export function getAdminTask(id: string): AdminTaskView | undefined {
-  return getAllAdminTasks().find((t) => t.id === id);
 }

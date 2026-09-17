@@ -1,21 +1,21 @@
 // Computed Command Center metrics — always derived from the underlying
 // project/task/people data, never hardcoded independently.
 //
-// People- and project-derived metrics (team size, active interns, active
-// projects) now read the real public.staff/public.projects tables (see
-// team.ts / projects.ts). Task-derived metrics still read MOCK_TASKS —
-// that's a later phase.
+// People-, project-, and staff-task-derived metrics now read the real
+// public.staff/public.projects/public.tasks tables. Intern tasks
+// (intern/mock-data.ts) remain mock — that's a separate, later phase.
 
-import { MOCK_TASKS } from "@/lib/staff/tasks-data";
+import { getAllRealTasks } from "./tasks";
 import { INTERN_TASKS } from "@/lib/intern/mock-data";
 import { getAllStaff } from "./team";
 import { getAllProjects } from "./projects";
 import type { AdminApplication } from "./application-types";
 
-// Anchors "today" to the same date this whole mock dataset's task due-dates
-// are written against, so overdue/upcoming comparisons stay internally
-// consistent — not tied to the real system clock.
-export const ADMIN_TODAY = "2026-09-14";
+// Real tasks have real due dates now, so "overdue"/"completing soon"
+// comparisons use the actual current date rather than a fixed anchor.
+export function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export async function getActiveProjectCount(): Promise<number> {
   const { projects } = await getAllProjects();
@@ -32,17 +32,16 @@ export async function getProjectStatusCounts() {
   };
 }
 
-export function getOpenTaskCount(): number {
-  const staffOpen = MOCK_TASKS.filter((t) => t.status !== "completed").length;
+export async function getOpenTaskCount(): Promise<number> {
+  const staffTasks = await getAllRealTasks();
+  const staffOpen = staffTasks.filter((t) => t.status !== "completed").length;
   const internOpen = INTERN_TASKS.filter((t) => t.status !== "completed").length;
   return staffOpen + internOpen;
 }
 
-export function getTaskStatusCounts() {
-  const all = [
-    ...MOCK_TASKS.map((t) => t.status),
-    ...INTERN_TASKS.map((t) => t.status),
-  ];
+export async function getTaskStatusCounts() {
+  const staffTasks = await getAllRealTasks();
+  const all = [...staffTasks.map((t) => t.status), ...INTERN_TASKS.map((t) => t.status)];
   return {
     todo: all.filter((s) => s === "todo").length,
     inProgress: all.filter((s) => s === "in-progress").length,
@@ -51,8 +50,10 @@ export function getTaskStatusCounts() {
   };
 }
 
-export function getOverdueTasks() {
-  return MOCK_TASKS.filter((t) => t.status !== "completed" && t.dueDate < ADMIN_TODAY);
+export async function getOverdueTasks() {
+  const staffTasks = await getAllRealTasks();
+  const now = today();
+  return staffTasks.filter((t) => t.status !== "completed" && t.dueDate && t.dueDate < now);
 }
 
 export function getPendingApplicationsCount(applications: AdminApplication[]): number {
@@ -72,12 +73,12 @@ export async function getTeamMemberCount(): Promise<number> {
 export async function getInternMetrics() {
   const { staff } = await getAllStaff();
   const interns = staff.filter((s) => s.role === "intern");
-  const today = new Date(`${ADMIN_TODAY}T00:00:00`);
+  const now = new Date();
   const active = interns.filter((i) => i.status === "active");
   const completingSoon = active.filter((i) => {
     if (!i.internship_end) return false;
     const end = new Date(i.internship_end);
-    const days = (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+    const days = (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     return days >= 0 && days <= 30;
   }).length;
   const completed = interns.filter((i) => i.status === "inactive").length;
@@ -94,7 +95,7 @@ export async function getCompanyPulse() {
     ? Math.round(projects.reduce((sum, p) => sum + p.progress, 0) / projects.length)
     : 0;
 
-  const taskCounts = getTaskStatusCounts();
+  const taskCounts = await getTaskStatusCounts();
   const totalTasks = taskCounts.todo + taskCounts.inProgress + taskCounts.inReview + taskCounts.completed;
   const taskCompletion = totalTasks > 0 ? Math.round((taskCounts.completed / totalTasks) * 100) : 0;
 

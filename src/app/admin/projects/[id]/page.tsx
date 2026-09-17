@@ -7,6 +7,7 @@ import AdminProjectWorkspace from "@/components/admin/projects/AdminProjectWorks
 import { getAdminIdentity } from "@/lib/admin/identity";
 import { getProject } from "@/lib/admin/projects";
 import { getProjectMilestones } from "@/lib/admin/milestones-data";
+import { getTasksForProject } from "@/lib/admin/tasks";
 
 export async function generateMetadata({ params }: PageProps<"/admin/projects/[id]">): Promise<Metadata> {
   const { id } = await params;
@@ -31,6 +32,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps<"/adm
   const { id } = await params;
   const project = await getProject(id);
   if (!project) notFound();
+  const tasks = await getTasksForProject(project.code);
 
   return (
     <AdminLayout active="projects" adminName={identity.name} adminInitials={identity.initials}>
@@ -58,7 +60,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps<"/adm
           </div>
         </div>
 
-        <AdminProjectWorkspace project={project} milestones={getProjectMilestones(project.code)} />
+        <AdminProjectWorkspace project={project} milestones={getProjectMilestones(project.code)} tasks={tasks} />
       </div>
     </AdminLayout>
   );

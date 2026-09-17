@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ProjectOverview from "@/components/staff/projects/ProjectOverview";
 import ProjectTaskList from "@/components/staff/projects/ProjectTaskList";
 import ProjectTeam from "@/components/staff/projects/ProjectTeam";
 import ProjectActivityTimeline from "@/components/staff/projects/ProjectActivityTimeline";
 import AdminMilestones from "./AdminMilestones";
-import { getProjectTasks } from "@/lib/staff/tasks-data";
+import { updateProjectStatus } from "@/lib/admin/projects-client";
 import type { ProjectMilestone } from "@/lib/admin/types";
-import type { StaffProject, ProjectStatus } from "@/lib/staff/types";
+import type { StaffProject, ProjectStatus, Task } from "@/lib/staff/types";
 
 type Section = "overview" | "tasks" | "team" | "milestones" | "activity";
 
@@ -32,12 +33,29 @@ const STATUS_OPTIONS: { value: ProjectStatus; label: string }[] = [
 export default function AdminProjectWorkspace({
   project,
   milestones,
+  tasks,
 }: {
   project: StaffProject;
   milestones: ProjectMilestone[];
+  tasks: Task[];
 }) {
+  const router = useRouter();
   const [section, setSection] = useState<Section>("overview");
   const [status, setStatus] = useState<ProjectStatus>(project.status);
+  const [statusError, setStatusError] = useState<string | null>(null);
+
+  const handleStatusChange = async (next: ProjectStatus) => {
+    const previous = status;
+    setStatus(next);
+    setStatusError(null);
+    const { error } = await updateProjectStatus(project.code, next);
+    if (error) {
+      setStatus(previous);
+      setStatusError(error);
+    } else {
+      router.refresh();
+    }
+  };
 
   return (
     <div className="mt-10">
@@ -50,7 +68,7 @@ export default function AdminProjectWorkspace({
             id="admin-project-status"
             className="admin-select"
             value={status}
-            onChange={(e) => setStatus(e.target.value as ProjectStatus)}
+            onChange={(e) => handleStatusChange(e.target.value as ProjectStatus)}
           >
             {STATUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -58,6 +76,11 @@ export default function AdminProjectWorkspace({
               </option>
             ))}
           </select>
+          {statusError && (
+            <p role="alert" className="text-[11px] text-accent">
+              {statusError}
+            </p>
+          )}
         </div>
         <Link
           href={`/admin/tasks?new=1&project=${project.code}`}
@@ -108,7 +131,7 @@ export default function AdminProjectWorkspace({
         className="proj-section mt-8"
       >
         {section === "overview" && <ProjectOverview project={{ ...project, status }} />}
-        {section === "tasks" && <ProjectTaskList tasks={getProjectTasks(project.code)} />}
+        {section === "tasks" && <ProjectTaskList tasks={tasks} />}
         {section === "team" && (
           <div>
             <h2 className="text-[11px] font-medium tracking-[0.25em] text-soft-white/45 uppercase">Project team</h2>

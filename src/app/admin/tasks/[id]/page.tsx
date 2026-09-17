@@ -6,17 +6,13 @@ import TaskWorkspace from "@/components/staff/tasks/TaskWorkspace";
 import InternTaskWorkspace from "@/components/intern/tasks/InternTaskWorkspace";
 import AdminTaskMeta from "@/components/admin/tasks/AdminTaskMeta";
 import { getAdminIdentity } from "@/lib/admin/identity";
-import { MOCK_TASKS } from "@/lib/staff/tasks-data";
+import { getRealTask } from "@/lib/admin/tasks";
+import { getProject } from "@/lib/admin/projects";
 import { INTERN_TASKS } from "@/lib/intern/mock-data";
-import { MOCK_PROJECTS } from "@/lib/staff/projects-data";
-
-export function generateStaticParams() {
-  return [...MOCK_TASKS.map((t) => ({ id: t.id })), ...INTERN_TASKS.map((t) => ({ id: t.id }))];
-}
 
 export async function generateMetadata({ params }: PageProps<"/admin/tasks/[id]">): Promise<Metadata> {
   const { id } = await params;
-  const task = MOCK_TASKS.find((t) => t.id === id) ?? INTERN_TASKS.find((t) => t.id === id);
+  const task = (await getRealTask(id)) ?? INTERN_TASKS.find((t) => t.id === id);
   return {
     title: task ? `${task.title} — LUNEX TECH Admin` : "Task — LUNEX TECH Admin",
     robots: { index: false, follow: false },
@@ -27,11 +23,11 @@ export default async function AdminTaskDetailPage({ params }: PageProps<"/admin/
   const identity = await getAdminIdentity();
 
   const { id } = await params;
-  const staffTask = MOCK_TASKS.find((t) => t.id === id);
+  const staffTask = await getRealTask(id);
   const internTask = staffTask ? undefined : INTERN_TASKS.find((t) => t.id === id);
   if (!staffTask && !internTask) notFound();
 
-  const project = staffTask ? MOCK_PROJECTS.find((p) => p.code === staffTask.projectId) : undefined;
+  const project = staffTask?.projectId ? await getProject(staffTask.projectId) : undefined;
 
   return (
     <AdminLayout active="tasks" adminName={identity.name} adminInitials={identity.initials}>
@@ -57,7 +53,11 @@ export default async function AdminTaskDetailPage({ params }: PageProps<"/admin/
           )}
         </div>
 
-        {staffTask ? <TaskWorkspace task={staffTask} /> : internTask ? <InternTaskWorkspace task={internTask} /> : null}
+        {staffTask ? (
+          <TaskWorkspace task={staffTask} viewer={{ staffId: identity.lunexId, name: identity.name }} />
+        ) : internTask ? (
+          <InternTaskWorkspace task={internTask} />
+        ) : null}
 
         <AdminTaskMeta taskTitle={(staffTask ?? internTask)!.title} />
       </div>

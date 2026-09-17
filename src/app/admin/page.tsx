@@ -26,11 +26,13 @@ export default async function AdminOverviewPage() {
   const identity = await getAdminIdentity();
   const { applications } = await getAllApplications();
   const { projects } = await getAllProjects();
-  const [teamMembers, activeInterns, activeProjects, pulse] = await Promise.all([
+  const [teamMembers, activeInterns, activeProjects, pulse, openTasks, overdueTasks] = await Promise.all([
     getTeamMemberCount(),
     getActiveInternCount(),
     getActiveProjectCount(),
     getCompanyPulse(),
+    getOpenTaskCount(),
+    getOverdueTasks(),
   ]);
 
   const milestoneProject = projects.find((project) =>
@@ -46,8 +48,8 @@ export default async function AdminOverviewPage() {
         activeProjects={activeProjects}
         teamMembers={teamMembers}
         activeInterns={activeInterns}
-        openTasks={getOpenTaskCount()}
-        overdueTasks={getOverdueTasks()}
+        openTasks={openTasks}
+        overdueTasks={overdueTasks}
         pendingApplications={getPendingApplicationsCount(applications)}
         milestoneProjectName={milestoneProject?.name ?? null}
         milestoneTitle={milestone?.title ?? null}
