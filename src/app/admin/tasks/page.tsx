@@ -20,7 +20,7 @@ export default async function AdminTasksPage() {
   const tasks = await getAllAdminTasks();
 
   return (
-    <AdminLayout active="tasks" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="tasks" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <Suspense fallback={null}>
         <TasksContent tasks={tasks} projects={projects} people={people} actorStaffId={identity.lunexId} />
       </Suspense>

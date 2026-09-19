@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import AdminSidebar, { type AdminNavId } from "./AdminSidebar";
+import NotificationBell from "@/components/shared/notifications/NotificationBell";
 import "@/styles/staff-dashboard.css";
 import "@/styles/staff-projects.css";
 import "@/styles/staff-tasks.css";
@@ -16,11 +17,13 @@ export default function AdminLayout({
   active,
   adminName,
   adminInitials,
+  staffId = null,
   children,
 }: {
   active: AdminNavId;
   adminName: string;
   adminInitials: string;
+  staffId?: string | null;
   children: ReactNode;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -32,7 +35,7 @@ export default function AdminLayout({
       </a>
 
       <aside className="dash-sidebar dash-sidebar--desktop" aria-label="Admin Command Center">
-        <AdminSidebar active={active} adminName={adminName} adminInitials={adminInitials} />
+        <AdminSidebar active={active} adminName={adminName} adminInitials={adminInitials} staffId={staffId} />
       </aside>
 
       {drawerOpen && (
@@ -53,6 +56,7 @@ export default function AdminLayout({
           active={active}
           adminName={adminName}
           adminInitials={adminInitials}
+          staffId={staffId}
           onNavigate={() => setDrawerOpen(false)}
         />
       </aside>
@@ -62,25 +66,28 @@ export default function AdminLayout({
           <Link href="/" className="dash-logo text-sm">
             LUNEX <span className="text-accent">TECH</span>
           </Link>
-          <button
-            type="button"
-            aria-label={drawerOpen ? "Close menu" : "Open menu"}
-            aria-expanded={drawerOpen}
-            aria-controls="admin-mobile-nav"
-            onClick={() => setDrawerOpen((v) => !v)}
-            className="flex h-9 w-9 flex-col items-center justify-center gap-1.5"
-          >
-            <span
-              className={`h-[1.5px] w-6 bg-soft-white transition-transform ${
-                drawerOpen ? "translate-y-[3.5px] rotate-45" : ""
-              }`}
-            />
-            <span
-              className={`h-[1.5px] w-6 bg-soft-white transition-transform ${
-                drawerOpen ? "-translate-y-[3.5px] -rotate-45" : ""
-              }`}
-            />
-          </button>
+          <div className="flex items-center gap-3">
+            {staffId && <NotificationBell staffId={staffId} notificationsHref="/admin/notifications" />}
+            <button
+              type="button"
+              aria-label={drawerOpen ? "Close menu" : "Open menu"}
+              aria-expanded={drawerOpen}
+              aria-controls="admin-mobile-nav"
+              onClick={() => setDrawerOpen((v) => !v)}
+              className="flex h-9 w-9 flex-col items-center justify-center gap-1.5"
+            >
+              <span
+                className={`h-[1.5px] w-6 bg-soft-white transition-transform ${
+                  drawerOpen ? "translate-y-[3.5px] rotate-45" : ""
+                }`}
+              />
+              <span
+                className={`h-[1.5px] w-6 bg-soft-white transition-transform ${
+                  drawerOpen ? "-translate-y-[3.5px] -rotate-45" : ""
+                }`}
+              />
+            </button>
+          </div>
         </header>
 
         <main id="admin-main-content" className="min-w-0 flex-1">

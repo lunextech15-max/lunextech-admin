@@ -4,7 +4,61 @@ import { useId, useState } from "react";
 import Modal from "@/components/admin/Modal";
 import { createAnnouncement } from "@/lib/admin/announcements-client";
 import { logActivity } from "@/lib/admin/activity-client";
+import { notify } from "@/lib/notifications/client";
+import { createClient } from "@/lib/supabase/client";
 import type { AnnouncementAudience } from "@/lib/admin/types";
+
+const AUDIENCE_ROLES: Record<AnnouncementAudience, string[]> = {
+  everyone: ["staff", "intern", "caller"],
+  staff: ["staff"],
+  intern: ["intern"],
+  caller: ["caller"],
+};
+
+// Best-effort — an announcement is already saved by the time this runs, so
+// a failure here never loses the announcement itself, only the fan-out
+// notifications for it.
+async function notifyAudience(input: {
+  audience: AnnouncementAudience;
+  authorStaffId: string;
+  announcementId: string;
+  title: string;
+  content: string;
+  important: boolean;
+  sendEmail: boolean;
+}) {
+  try {
+    const supabase = createClient();
+    const { data: recipients, error } = await supabase
+      .from("staff")
+      .select("staff_id")
+      .eq("status", "active")
+      .in("role", AUDIENCE_ROLES[input.audience])
+      .neq("staff_id", input.authorStaffId);
+
+    if (error || !recipients) {
+      console.error("notifyAudience: recipient lookup failed", error);
+      return;
+    }
+
+    await Promise.all(
+      recipients.map((r) =>
+        notify({
+          recipientStaffId: (r as { staff_id: string }).staff_id,
+          title: `Announcement: ${input.title}`,
+          message: input.content,
+          type: "ANNOUNCEMENT",
+          priority: input.important ? "important" : "normal",
+          entityType: "announcement",
+          entityId: input.announcementId,
+          sendEmail: input.sendEmail,
+        })
+      )
+    );
+  } catch (err) {
+    console.error("notifyAudience: unexpected failure", err);
+  }
+}
 
 export type CreatedAnnouncement = { id: string; title: string };
 
@@ -22,6 +76,7 @@ export default function CreateAnnouncementModal({
   const [message, setMessage] = useState("");
   const [audience, setAudience] = useState<AnnouncementAudience>("everyone");
   const [important, setImportant] = useState(false);
+  const [emailEnabled, setEmailEnabled] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -54,6 +109,20 @@ export default function CreateAnnouncementModal({
 
     onCreated({ id, title: title.trim() });
     void logActivity(authorStaffId, "announcements", published ? "Published announcement" : "Drafted announcement", title.trim());
+
+    // Drafts aren't visible to anyone yet, per the announcements RLS/audience
+    // rules — only a published announcement should notify its audience.
+    if (published) {
+      void notifyAudience({
+        audience,
+        authorStaffId,
+        announcementId: id,
+        title: title.trim(),
+        content: message.trim(),
+        important,
+        sendEmail: emailEnabled,
+      });
+    }
   };
 
   return (
@@ -82,8 +151,8 @@ export default function CreateAnnouncementModal({
           <p id={`${titleId}-audience-label`} className="staff-field-label">
             Audience
           </p>
-          <div role="radiogroup" aria-labelledby={`${titleId}-audience-label`} className="mt-2 flex gap-3">
-            {(["everyone", "staff", "intern"] as AnnouncementAudience[]).map((option) => (
+          <div role="radiogroup" aria-labelledby={`${titleId}-audience-label`} className="mt-2 flex flex-wrap gap-3">
+            {(["everyone", "staff", "intern", "caller"] as AnnouncementAudience[]).map((option) => (
               <button
                 key={option}
                 type="button"
@@ -92,9 +161,35 @@ export default function CreateAnnouncementModal({
                 onClick={() => setAudience(option)}
                 className={`admin-type-option ${audience === option ? "is-active" : ""}`}
               >
-                {option === "everyone" ? "Everyone" : option === "staff" ? "Staff only" : "Interns only"}
+                {option === "everyone"
+                  ? "Everyone"
+                  : option === "staff"
+                    ? "Staff only"
+                    : option === "intern"
+                      ? "Interns only"
+                      : "Cold callers only"}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div>
+          <p id={`${titleId}-delivery-label`} className="staff-field-label">
+            Delivery
+          </p>
+          <div aria-labelledby={`${titleId}-delivery-label`} className="mt-2 flex flex-wrap gap-3">
+            <span className="admin-type-option is-active" aria-disabled="true">
+              In-app ✓
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={emailEnabled}
+              onClick={() => setEmailEnabled((v) => !v)}
+              className={`admin-type-option ${emailEnabled ? "is-active" : ""}`}
+            >
+              Email {emailEnabled ? "✓" : ""}
+            </button>
           </div>
         </div>
 

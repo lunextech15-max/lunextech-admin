@@ -14,7 +14,7 @@ export default async function AdminAttendanceSettingsPage() {
   const [identity, settings] = await Promise.all([getAdminIdentity(), getAttendanceSettings()]);
 
   return (
-    <AdminLayout active="attendance" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="attendance" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <AttendanceSettingsContent settings={settings} />
     </AdminLayout>
   );

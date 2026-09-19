@@ -30,7 +30,7 @@ export default async function AdminTaskDetailPage({ params }: PageProps<"/admin/
   const project = staffTask?.projectId ? await getProject(staffTask.projectId) : undefined;
 
   return (
-    <AdminLayout active="tasks" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="tasks" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <Link href="/admin/tasks" className="dash-metric-link text-xs font-medium tracking-[0.15em] uppercase">
           ← All tasks

@@ -14,7 +14,7 @@ export default async function AdminActivityPage() {
   const [identity, activity] = await Promise.all([getAdminIdentity(), getAllActivity()]);
 
   return (
-    <AdminLayout active="activity" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="activity" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <ActivityContent activity={activity} />
     </AdminLayout>
   );

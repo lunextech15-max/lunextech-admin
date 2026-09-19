@@ -17,7 +17,7 @@ export default async function AdminAttendancePage() {
   const [{ records, error }, { people }] = await Promise.all([getAllAttendance(), getAllPeople()]);
 
   return (
-    <AdminLayout active="attendance" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="attendance" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <Suspense fallback={null}>
         <AttendanceContent
           records={records}

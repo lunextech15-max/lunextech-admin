@@ -3,6 +3,8 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import ChangePasswordForm from "@/components/admin/settings/ChangePasswordForm";
 import SignOutAllDevices from "@/components/admin/settings/SignOutAllDevices";
 import UpdateProfileForm from "@/components/admin/settings/UpdateProfileForm";
+import SendTestEmailButton from "@/components/admin/settings/SendTestEmailButton";
+import NotificationPreferencesPanel from "@/components/shared/notifications/NotificationPreferencesPanel";
 import { getAdminIdentity } from "@/lib/admin/identity";
 import { getDepartmentsInUse } from "@/lib/admin/team";
 
@@ -22,10 +24,10 @@ export default async function AdminSettingsPage() {
   const departmentsInUse = await getDepartmentsInUse();
 
   return (
-    <AdminLayout active="settings" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="settings" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <p className="text-[11px] font-medium tracking-[0.25em] text-soft-white/40 uppercase">
-          09 <span className="text-accent">/ Settings</span>
+          12 <span className="text-accent">/ Settings</span>
         </p>
         <h1 className="mt-4 font-display text-[11vw] font-black leading-[0.95] tracking-tight text-soft-white sm:text-[6vw] lg:text-[3vw] xl:text-4xl">
           System
@@ -133,6 +135,38 @@ export default async function AdminSettingsPage() {
             <SignOutAllDevices />
           </div>
         </section>
+
+        <section aria-labelledby="email-heading" className="mt-10">
+          <h2 id="email-heading" className="text-[11px] font-medium tracking-[0.25em] text-soft-white/45 uppercase">
+            Email
+          </h2>
+          <div className="mt-4 border border-line p-6 sm:p-8">
+            <p className="text-[10px] font-medium tracking-[0.2em] text-soft-white/40 uppercase">
+              Notification email system
+            </p>
+            <p className="mt-2 max-w-md text-sm text-soft-white/60">
+              Sends a test message through the same Resend + Edge Function pipeline every notification email uses, to
+              your own address ({identity.email}) — confirms the pipeline is configured without emailing anyone else.
+            </p>
+            <div className="mt-4">
+              <SendTestEmailButton />
+            </div>
+          </div>
+        </section>
+
+        {identity.staffId && (
+          <section aria-labelledby="notif-prefs-heading" className="mt-10">
+            <h2
+              id="notif-prefs-heading"
+              className="text-[11px] font-medium tracking-[0.25em] text-soft-white/45 uppercase"
+            >
+              Notification preferences
+            </h2>
+            <div className="mt-4 max-w-lg border border-line px-6 py-2 sm:px-8">
+              <NotificationPreferencesPanel staffId={identity.staffId} />
+            </div>
+          </section>
+        )}
       </div>
     </AdminLayout>
   );

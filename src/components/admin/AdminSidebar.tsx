@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SignOutButton from "@/components/staff/SignOutButton";
+import NotificationBell from "@/components/shared/notifications/NotificationBell";
 
 export type AdminNavId =
   | "overview"
@@ -11,6 +12,7 @@ export type AdminNavId =
   | "leads"
   | "applications"
   | "announcements"
+  | "notifications"
   | "activity"
   | "settings";
 
@@ -31,20 +33,23 @@ const MAIN_NAV: NavItem[] = [
   { id: "leads", number: "07", label: "Leads", href: "/admin/leads" },
   { id: "applications", number: "08", label: "Applications", href: "/admin/applications" },
   { id: "announcements", number: "09", label: "Announcements", href: "/admin/announcements" },
-  { id: "activity", number: "10", label: "Activity", href: "/admin/activity" },
+  { id: "notifications", number: "10", label: "Notifications", href: "/admin/notifications" },
+  { id: "activity", number: "11", label: "Activity", href: "/admin/activity" },
 ];
 
-const SETTINGS_NAV: NavItem = { id: "settings", number: "11", label: "Settings", href: "/admin/settings" };
+const SETTINGS_NAV: NavItem = { id: "settings", number: "12", label: "Settings", href: "/admin/settings" };
 
 export default function AdminSidebar({
   active,
   adminName,
   adminInitials,
+  staffId,
   onNavigate,
 }: {
   active: AdminNavId;
   adminName: string;
   adminInitials: string;
+  staffId: string | null;
   onNavigate?: () => void;
 }) {
   return (
@@ -53,6 +58,7 @@ export default function AdminSidebar({
         <Link href="/" className="dash-logo text-sm">
           LUNEX <span className="text-accent">TECH</span>
         </Link>
+        {staffId && <NotificationBell staffId={staffId} notificationsHref="/admin/notifications" />}
       </div>
       <div className="px-6 pb-6">
         <p className="text-[10px] font-medium tracking-[0.3em] text-soft-white/35 uppercase">Admin command</p>

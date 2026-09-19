@@ -21,7 +21,7 @@ export default async function AdminProjectsPage() {
   ]);
 
   return (
-    <AdminLayout active="projects" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="projects" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <Suspense fallback={null}>
         <ProjectsContent
           projects={projects}

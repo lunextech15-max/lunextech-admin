@@ -4,6 +4,7 @@ import { useId, useState, type FormEvent } from "react";
 import Modal from "@/components/admin/Modal";
 import { createTask } from "@/lib/admin/tasks-client";
 import { logActivity } from "@/lib/admin/activity-client";
+import { notify } from "@/lib/notifications/client";
 import type { PersonAccount } from "@/lib/admin/types";
 import type { StaffProject, TaskPriority } from "@/lib/staff/types";
 
@@ -65,6 +66,19 @@ export default function CreateTaskModal({
 
     onCreated({ id, title: title.trim() });
     void logActivity(actorStaffId, "tasks", "Created task", title.trim());
+
+    if (assigneeId) {
+      const project = projects.find((p) => p.code === projectCode);
+      void notify({
+        recipientStaffId: assigneeId,
+        title: "New task assigned",
+        message: `${title.trim()}${project ? ` — ${project.name}` : ""}${dueDate ? `, due ${dueDate}` : ""}`,
+        type: "TASK_ASSIGNED",
+        entityType: "task",
+        entityId: id,
+        actionUrl: `/staff/tasks/${id}`,
+      });
+    }
   };
 
   return (

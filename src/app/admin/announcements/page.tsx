@@ -15,7 +15,7 @@ export default async function AdminAnnouncementsPage() {
   const [identity, announcements] = await Promise.all([getAdminIdentity(), getAllAnnouncements()]);
 
   return (
-    <AdminLayout active="announcements" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="announcements" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <Suspense fallback={null}>
         <AnnouncementsContent announcements={announcements} authorStaffId={identity.lunexId} />
       </Suspense>

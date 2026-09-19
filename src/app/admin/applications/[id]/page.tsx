@@ -26,7 +26,7 @@ export default async function AdminApplicationDetailPage({ params }: PageProps<"
   if (!application) notFound();
 
   return (
-    <AdminLayout active="applications" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="applications" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <Link
           href="/admin/applications"

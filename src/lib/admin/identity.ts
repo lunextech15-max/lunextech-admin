@@ -35,12 +35,19 @@ export async function getAdminIdentity() {
     redirect("/staff");
   }
 
-  const name = (user.user_metadata?.full_name as string | undefined)?.trim() || ADMIN_USER.name;
+  const { data: staffRow } = await supabase
+    .from("staff")
+    .select("staff_id, full_name")
+    .eq("email", user.email ?? "")
+    .maybeSingle();
+
+  const name = staffRow?.full_name || (user.user_metadata?.full_name as string | undefined)?.trim() || ADMIN_USER.name;
 
   return {
     name,
     initials: initialsFrom(name),
     email: user.email ?? ADMIN_USER.email,
-    lunexId: ADMIN_USER.lunexId,
+    lunexId: staffRow?.staff_id ?? ADMIN_USER.lunexId,
+    staffId: staffRow?.staff_id ?? null,
   };
 }

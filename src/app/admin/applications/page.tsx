@@ -15,7 +15,7 @@ export default async function AdminApplicationsPage() {
   const { applications, error } = await getAllApplications();
 
   return (
-    <AdminLayout active="applications" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="applications" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <ApplicationsContent applications={applications} loadError={error} />
     </AdminLayout>
   );

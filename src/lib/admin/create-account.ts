@@ -13,6 +13,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "./require-admin";
+import { createNotification } from "@/lib/notifications/create-server";
 import type { AccountRole } from "./types";
 
 export type CreateAccountInput = {
@@ -76,6 +77,14 @@ export async function createAccount(input: CreateAccountInput): Promise<{ error:
     await admin.auth.admin.deleteUser(created.user.id);
     return { error: profileError.message };
   }
+
+  void createNotification({
+    recipientStaffId: input.staffId,
+    title: "Your LUNEX account has been created",
+    message: `Your LUNEX ID is ${input.staffId}. Sign in at the Staff Portal with the password your admin set for you.`,
+    type: "ACCOUNT_CREATED",
+    actionUrl: "/staff",
+  });
 
   return { error: null };
 }

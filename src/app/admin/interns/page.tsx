@@ -20,7 +20,7 @@ export default async function AdminInternsPage() {
   const interns = people.filter((p) => p.role === "intern");
 
   return (
-    <AdminLayout active="interns" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="interns" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <div className="dash-fade flex flex-wrap items-start justify-between gap-6">
           <div>

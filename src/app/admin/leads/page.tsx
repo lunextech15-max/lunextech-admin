@@ -17,7 +17,7 @@ export default async function AdminLeadsPage() {
   const [leads, scripts, callers] = await Promise.all([getAllLeads(), getAllScripts(), getCallerOptions()]);
 
   return (
-    <AdminLayout active="leads" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="leads" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <Suspense fallback={null}>
         <LeadsContent leads={leads} scripts={scripts} callers={callers} adminStaffId={identity.lunexId} />
       </Suspense>

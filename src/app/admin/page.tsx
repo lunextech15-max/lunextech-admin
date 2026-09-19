@@ -46,7 +46,7 @@ export default async function AdminOverviewPage() {
   const milestone = inProgressEntry?.milestones.find((m) => m.status === "in-progress");
 
   return (
-    <AdminLayout active="overview" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="overview" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <AdminOverviewContent
         activeProjects={activeProjects}
         teamMembers={teamMembers}

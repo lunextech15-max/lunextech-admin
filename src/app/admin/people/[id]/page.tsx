@@ -33,7 +33,7 @@ export default async function AdminPersonDetailPage({ params }: PageProps<"/admi
   const taskCompletion = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
   return (
-    <AdminLayout active="people" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="people" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <Link href="/admin/people" className="dash-metric-link text-xs font-medium tracking-[0.15em] uppercase">
           ← All people

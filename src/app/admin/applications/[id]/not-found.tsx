@@ -6,7 +6,7 @@ export default async function AdminApplicationNotFound() {
   const identity = await getAdminIdentity();
 
   return (
-    <AdminLayout active="applications" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="applications" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <div className="px-6 py-10 md:px-10 lg:px-16 lg:py-14">
         <p className="text-[11px] font-medium tracking-[0.25em] text-soft-white/40 uppercase">
           06 <span className="text-accent">/ Applications</span>

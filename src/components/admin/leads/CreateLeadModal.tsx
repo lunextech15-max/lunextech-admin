@@ -4,6 +4,7 @@ import { useId, useState, type FormEvent } from "react";
 import Modal from "@/components/admin/Modal";
 import { createLead } from "@/lib/admin/leads-client";
 import { logActivity } from "@/lib/admin/activity-client";
+import { notify } from "@/lib/notifications/client";
 import type { LeadPriority } from "@/lib/caller/types";
 
 const PRIORITIES: LeadPriority[] = ["high", "medium", "low"];
@@ -66,6 +67,18 @@ export default function CreateLeadModal({
 
     onCreated({ id, name: name.trim() });
     void logActivity(createdBy, "leads", "Created lead", name.trim());
+
+    if (assignedCallerId) {
+      void notify({
+        recipientStaffId: assignedCallerId,
+        title: "New lead assigned",
+        message: `${name.trim()}${company.trim() ? ` — ${company.trim()}` : ""}`,
+        type: "LEAD_ASSIGNED",
+        entityType: "lead",
+        entityId: id,
+        actionUrl: `/caller/leads/${id}`,
+      });
+    }
   };
 
   return (

@@ -21,7 +21,7 @@ export default async function AdminPeoplePage() {
   ]);
 
   return (
-    <AdminLayout active="people" adminName={identity.name} adminInitials={identity.initials}>
+    <AdminLayout active="people" adminName={identity.name} adminInitials={identity.initials} staffId={identity.staffId}>
       <Suspense fallback={null}>
         <PeopleContent
           initialPeople={people}

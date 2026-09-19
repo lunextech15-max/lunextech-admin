@@ -52,4 +52,4 @@ export type AdminActivityEntry = {
   important?: boolean;
 };
 
-export type AnnouncementAudience = "everyone" | "staff" | "intern";
+export type AnnouncementAudience = "everyone" | "staff" | "intern" | "caller";

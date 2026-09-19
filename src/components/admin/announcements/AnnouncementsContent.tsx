@@ -16,6 +16,7 @@ const AUDIENCE_LABEL: Record<AnnouncementAudience, string> = {
   everyone: "Everyone",
   staff: "Staff only",
   intern: "Interns only",
+  caller: "Cold callers only",
 };
 
 export default function AnnouncementsContent({
