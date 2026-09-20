@@ -113,6 +113,31 @@ export async function updateNotificationPreferences(
   return true;
 }
 
+const inFlightSnapshots = new Map<string, Promise<{ notifications: Notification[]; unreadCount: number }>>();
+
+// Fetches the bell's initial "recent notifications + unread count" —
+// deduplicated per staffId so 3 simultaneous bell instances (desktop
+// sidebar, mobile drawer, mobile topbar) share one round trip instead of
+// each firing their own. The cache entry is cleared once it resolves, so a
+// later, separate page load still gets a fresh read.
+export function getNotificationSnapshot(staffId: string): Promise<{ notifications: Notification[]; unreadCount: number }> {
+  const existing = inFlightSnapshots.get(staffId);
+  if (existing) return existing;
+
+  const supabase = createClient();
+  const promise = Promise.all([
+    supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(8),
+    supabase.from("notifications").select("*", { count: "exact", head: true }).eq("is_read", false),
+  ]).then(([recentRes, countRes]) => ({
+    notifications: ((recentRes.data ?? []) as Record<string, unknown>[]).map(rowToNotification),
+    unreadCount: countRes.count ?? 0,
+  }));
+
+  inFlightSnapshots.set(staffId, promise);
+  void promise.finally(() => inFlightSnapshots.delete(staffId));
+  return promise;
+}
+
 export function rowToNotification(row: Record<string, unknown>): Notification {
   return {
     id: row.id as string,

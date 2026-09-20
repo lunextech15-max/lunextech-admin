@@ -2,8 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { markNotificationRead, markAllNotificationsRead, rowToNotification, subscribeToNotifications } from "@/lib/notifications/client";
+import {
+  markNotificationRead,
+  markAllNotificationsRead,
+  getNotificationSnapshot,
+  subscribeToNotifications,
+} from "@/lib/notifications/client";
 import { TYPE_ICON, timeAgo } from "@/lib/notifications/ui";
 import type { Notification } from "@/lib/notifications/types";
 import "@/styles/notifications.css";
@@ -17,17 +21,12 @@ export default function NotificationBell({ staffId, notificationsHref }: { staff
 
   useEffect(() => {
     let cancelled = false;
-    const supabase = createClient();
 
-    (async () => {
-      const [recentRes, countRes] = await Promise.all([
-        supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(8),
-        supabase.from("notifications").select("*", { count: "exact", head: true }).eq("is_read", false),
-      ]);
+    void getNotificationSnapshot(staffId).then(({ notifications, unreadCount }) => {
       if (cancelled) return;
-      setNotifications(((recentRes.data ?? []) as Record<string, unknown>[]).map(rowToNotification));
-      setUnreadCount(countRes.count ?? 0);
-    })();
+      setNotifications(notifications);
+      setUnreadCount(unreadCount);
+    });
 
     const unsubscribe = subscribeToNotifications(staffId, (notification) => {
       setNotifications((prev) => [notification, ...prev].slice(0, 8));
