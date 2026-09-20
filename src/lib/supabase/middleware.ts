@@ -38,8 +38,47 @@ export async function updateSession(request: NextRequest) {
   const isLoginPage = pathname === "/staff";
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
 
+  // Every redirect this function can issue goes through here. Auth state
+  // (getUser(), get_my_role()) has turned out to be inconsistent across the
+  // rapid consecutive requests a redirect chain itself fires — sometimes
+  // seeing a valid session, sometimes not, for the SAME browser session
+  // milliseconds apart (a token-refresh race). Bouncing on every
+  // inconsistent read can turn into an infinite ping-pong loop between
+  // /admin and /staff (ERR_TOO_MANY_REDIRECTS). A Referer-based loop check
+  // isn't reliable here — browsers don't consistently update Referer per
+  // hop while auto-following a redirect chain — so this counts consecutive
+  // redirects in a short-lived cookie instead: a real, deliberate redirect
+  // happens once; several in immediate succession is the race, not a real
+  // navigation attempt.
+  const REDIRECT_GUARD_COOKIE = "mw_redirect_count";
+  const MAX_CONSECUTIVE_REDIRECTS = 3;
+  const redirectCount = Number(request.cookies.get(REDIRECT_GUARD_COOKIE)?.value ?? "0");
+
+  const redirectTo = (path: string) => {
+    if (redirectCount >= MAX_CONSECUTIVE_REDIRECTS) {
+      console.error("updateSession: too many redirects in a row, breaking a potential loop", {
+        pathname,
+        target: path,
+        redirectCount,
+      });
+      supabaseResponse.cookies.delete(REDIRECT_GUARD_COOKIE);
+      return supabaseResponse;
+    }
+    const response = NextResponse.redirect(new URL(path, request.url));
+    response.cookies.set(REDIRECT_GUARD_COOKIE, String(redirectCount + 1), { maxAge: 5, path: "/" });
+    return response;
+  };
+
+  // Any request that reaches here without redirecting is a real, landed
+  // page load — clear the guard so it doesn't outlive the burst it was
+  // meant to catch.
+  const landed = () => {
+    if (redirectCount > 0) supabaseResponse.cookies.delete(REDIRECT_GUARD_COOKIE);
+    return supabaseResponse;
+  };
+
   if (!user && isAdminRoute) {
-    return NextResponse.redirect(new URL("/staff", request.url));
+    return redirectTo("/staff");
   }
 
   if (user && (isAdminRoute || isLoginPage)) {
@@ -49,22 +88,19 @@ export async function updateSession(request: NextRequest) {
     };
 
     // A transient RPC failure must never be treated as "not admin" — that
-    // bounces a real admin to /staff, which (once the next request's
-    // lookup succeeds) bounces them straight back to /admin, then back to
-    // /staff on the next failure: an infinite redirect loop. Fail open on
-    // a failed lookup instead of guessing.
+    // bounces a real admin to /staff.
     if (roleError) {
       console.error("updateSession: get_my_role failed, skipping role-based redirect", roleError);
-      return supabaseResponse;
+      return landed();
     }
 
     if (isAdminRoute && role !== "admin") {
-      return NextResponse.redirect(new URL("/staff", request.url));
+      return redirectTo("/staff");
     }
     if (isLoginPage && role === "admin") {
-      return NextResponse.redirect(new URL("/admin", request.url));
+      return redirectTo("/admin");
     }
   }
 
-  return supabaseResponse;
+  return landed();
 }
