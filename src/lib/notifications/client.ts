@@ -132,20 +132,53 @@ export function rowToNotification(row: Record<string, unknown>): Notification {
   };
 }
 
+type ChannelEntry = {
+  channel: ReturnType<ReturnType<typeof createClient>["channel"]>;
+  listeners: Set<(notification: Notification) => void>;
+};
+
+// One real Realtime channel per staffId, shared across however many
+// components ask for it — the notification bell renders 3 times per page
+// (desktop sidebar, mobile drawer, mobile topbar), and Supabase's Realtime
+// client throws if a second `.on("postgres_changes", ...)` is registered on
+// a channel that's already `.subscribe()`d. Without this, the 2nd/3rd bell
+// instance crashed the whole page on mount.
+const activeChannels = new Map<string, ChannelEntry>();
+
 // Subscribes to new notifications for one recipient. Returns an unsubscribe
-// function — always call it on unmount/logout so the channel doesn't leak.
+// function — always call it on unmount/logout. The underlying channel is
+// only created once per staffId and torn down once the last subscriber
+// unsubscribes.
 export function subscribeToNotifications(staffId: string, onInsert: (notification: Notification) => void): () => void {
   const supabase = createClient();
-  const channel = supabase
-    .channel(`notifications:${staffId}`)
-    .on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_staff_id=eq.${staffId}` },
-      (payload) => onInsert(rowToNotification(payload.new as Record<string, unknown>))
-    )
-    .subscribe();
+  let entry = activeChannels.get(staffId);
+
+  if (!entry) {
+    const listeners = new Set<(notification: Notification) => void>();
+    const channel = supabase
+      .channel(`notifications:${staffId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_staff_id=eq.${staffId}` },
+        (payload) => {
+          const notification = rowToNotification(payload.new as Record<string, unknown>);
+          listeners.forEach((listener) => listener(notification));
+        }
+      )
+      .subscribe();
+    entry = { channel, listeners };
+    activeChannels.set(staffId, entry);
+  }
+
+  entry.listeners.add(onInsert);
 
   return () => {
-    supabase.removeChannel(channel);
+    const current = activeChannels.get(staffId);
+    if (!current) return;
+    current.listeners.delete(onInsert);
+    if (current.listeners.size === 0) {
+      supabase.removeChannel(current.channel);
+      activeChannels.delete(staffId);
+    }
   };
 }
