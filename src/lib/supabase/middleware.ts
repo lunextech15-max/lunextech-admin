@@ -43,7 +43,20 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && (isAdminRoute || isLoginPage)) {
-    const { data: role } = (await supabase.rpc("get_my_role")) as { data: string | null };
+    const { data: role, error: roleError } = (await supabase.rpc("get_my_role")) as {
+      data: string | null;
+      error: unknown;
+    };
+
+    // A transient RPC failure must never be treated as "not admin" — that
+    // bounces a real admin to /staff, which (once the next request's
+    // lookup succeeds) bounces them straight back to /admin, then back to
+    // /staff on the next failure: an infinite redirect loop. Fail open on
+    // a failed lookup instead of guessing.
+    if (roleError) {
+      console.error("updateSession: get_my_role failed, skipping role-based redirect", roleError);
+      return supabaseResponse;
+    }
 
     if (isAdminRoute && role !== "admin") {
       return NextResponse.redirect(new URL("/staff", request.url));
