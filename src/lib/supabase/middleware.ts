@@ -65,6 +65,17 @@ export async function updateSession(request: NextRequest) {
       return supabaseResponse;
     }
     const response = NextResponse.redirect(new URL(path, request.url));
+    // Carry over any refreshed Supabase auth cookies captured on
+    // supabaseResponse (via the setAll() callback during getUser()).
+    // Without this, every redirect silently drops the just-refreshed
+    // session: the browser resends the stale, already-rotated refresh
+    // token on the next hop, getUser() fails, and it redirects again —
+    // a real, self-sustaining auth failure on every hop, not a clean
+    // chain, which is why the redirect-count guard below wasn't actually
+    // capping it.
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      response.cookies.set(cookie.name, cookie.value, cookie);
+    });
     response.cookies.set(REDIRECT_GUARD_COOKIE, String(redirectCount + 1), { maxAge: 5, path: "/" });
     return response;
   };
